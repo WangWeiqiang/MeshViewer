@@ -32,6 +32,9 @@ public:
 	static GLfloat	g_yRotate;
 	static GLfloat	g_zRotate;
 	static float	g_lightPos[4];
+	static float	g_lightAmbient[4];
+	static float	g_lightDiffuse[4];
+	static float	g_lightSpecular[4];
 	static DWORD	last_idle_time;
 	static GLfloat	g_fTeapotAngle;
 	static GLfloat	g_fTeapotAngle2;

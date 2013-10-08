@@ -2,18 +2,17 @@
 #include "MeshViewer.h"
 static int g_Width = Environment::windowWidth;                          // Initial window width
 static int g_Height = Environment::windowHeight;                         // Initial window height
-static GLfloat g_nearPlane = 1;
-static GLfloat g_farPlane = 1000;
+static GLfloat g_nearPlane = 5;
+static GLfloat g_farPlane = 100;
 
 void reshape(GLint width, GLint height)
 {
-   g_Width = width;
-   g_Height = height;
-   glViewport(0, 0, g_Width, g_Height);
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   gluPerspective(65.0, (float)g_Width / g_Height, g_nearPlane, g_farPlane);
-   glMatrixMode(GL_MODELVIEW);
+	glViewport(0, 0, (GLsizei) Environment::windowWidth, (GLsizei) Environment::windowHeight);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//glOrtho(-50.0, 50.0, -50.0, 50.0, -1.0, -1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void drawAxes(void){

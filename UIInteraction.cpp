@@ -3,16 +3,17 @@
 using namespace std;
 
 void SetCameraPosition(){
-	if(Environment::g_yRotate>Environment::PI/2.2)
-		Environment::g_yRotate=Environment::PI/2.2;
-	if(Environment::g_yRotate<0.01)
+	
+	if(Environment::g_yRotate>2*Environment::PI)
+		Environment::g_yRotate=-2*Environment::PI;
+	if(Environment::g_yRotate<-2*Environment::PI)
 		Environment::g_yRotate=0.01;
-
+	
 	if(Environment::g_xRotate>2*Environment::PI)
 		Environment::g_xRotate=0.01;
 	if(Environment::g_xRotate<0)
 		Environment::g_xRotate=2*Environment::PI;
-
+	
 	if(Environment::g_fViewDistance>50)
 		Environment::g_fViewDistance=50;
 	if(Environment::g_fViewDistance<5)
@@ -20,7 +21,7 @@ void SetCameraPosition(){
 
 	Environment::camera[0]=Environment::center[0]+Environment::g_fViewDistance*sin(Environment::g_yRotate)*cos(Environment::g_xRotate);
 	Environment::camera[2]=Environment::center[1]+Environment::g_fViewDistance*sin(Environment::g_yRotate)*sin(Environment::g_xRotate);
-	Environment::camera[1]=Environment::center[1]+Environment::g_fViewDistance*cos(Environment::g_yRotate);
+	Environment::camera[1]=Environment::center[2]+Environment::g_fViewDistance*cos(Environment::g_yRotate);
 }
 
 void RotateUp(){
@@ -48,6 +49,7 @@ void ZoomIn(){
 	Environment::center[2]+=Environment::mSpeed*sin(Environment::g_xRotate);
 	SetCameraPosition();
 }
+
 void ZoomOut(){
 	Environment::center[0]==Environment::mSpeed*cos(Environment::g_xRotate);
 	Environment::center[2]-=Environment::mSpeed*sin(Environment::g_xRotate);
@@ -95,8 +97,8 @@ void KeyboardEvent(unsigned char key, int x, int y)
 void MouseMotion(int x, int y)
 {
 	if(Environment::g_bButtonLeftDown){
-		Environment::g_xRotate+=(x-Environment::g_xClick)/80.0f;
-		Environment::g_yRotate-=(y-Environment::g_yClick)/120.0f;
+		Environment::g_xRotate-=(x-Environment::g_xClick)/80.0f;
+		Environment::g_yRotate-=(y-Environment::g_yClick)/80.0f;
 	}
 
 	if(Environment::g_bButtonMiddleDown){
@@ -109,7 +111,6 @@ void MouseMotion(int x, int y)
 
 	SetCameraPosition();
 	glutPostRedisplay();
-	
 }
 
 void MouseEvent(int button, int state, int x, int y)
@@ -143,7 +144,7 @@ void windowResize(int width,int height){
 		viewPortY=(height-width)/2;
 	}
 	glViewport(viewPortX,viewPortY,viewPort,viewPort);
-	glMatrixMode(GL_PROJECTION);
+	
 	glLoadIdentity();
 	glutPostRedisplay();
 }
