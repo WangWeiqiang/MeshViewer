@@ -81,13 +81,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Environment.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GlobalVariable.h" />
-    <ClInclude Include="Menu.h" />
-    <ClInclude Include="MeshHelper.h" />
-    <ClInclude Include="UIInteraction.h" />
+    <ClInclude Include="Menu.cpp" />
+    <ClInclude Include="MeshHelper.cpp" />
+    <ClInclude Include="MeshViewer.h" />
+    <ClInclude Include="UIInteraction.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
