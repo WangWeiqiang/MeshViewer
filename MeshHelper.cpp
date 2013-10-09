@@ -16,28 +16,31 @@ void reshape(GLint width, GLint height)
 }
 
 void drawAxes(void){
+	glPushMatrix();
+	/* No name for grey sphere */
+	glColor3f(0.3,0.3,0.3);
+	glutSolidSphere(0.2, 10, 10);
+	glPushMatrix();
 	
-	//glRotatef (0 , 1,0,0);
-	//glRotatef (0, 0,1,0);
-	//glScalef (0.25, 0.25, 0.25);
-	float ORG[3] = {0,0,0};
-	float XP[3] = {10,0,0}, XN[3] = {-10,0,0},YP[3] = {0,10,0}, YN[3] = {0,-10,0},ZP[3] = {0,0,10}, ZN[3] = {0,0,10};
+	glPushName(1);            /* Red cone is 1 */
+	glColor3f(1,0,0);
+	glRotatef(90,0,1,0);
+	glutSolidCone(0.1, 4.0,10,10);
+	glPopName();
+	glPopMatrix();
+	glPushMatrix ();
 
+	glPushName(2);            /* Green cone is 2 */
+	glColor3f(0,1,0);
+	glRotatef(-90,1,0,0);
+	glutSolidCone(0.1, 4.0, 10, 10);
+	glPopName();
+	glPopMatrix();
 	
-	glBegin (GL_LINES);
-	glLineWidth (4.0);
-
-	glColor3f (1,0,0); // X axis is red.
-	glVertex3fv (ORG);
-	glVertex3fv (XP );
-
-	glColor3f (0,1,0); // Y axis is green.
-	glVertex3fv (ORG);
-	glVertex3fv (YP );
-	
-	glColor3f (0,0,1); // z axis is blue.
-	glVertex3fv (ORG);
-	glVertex3fv (ZP ); 
-	glEnd();
+	glColor3f(0,0,1);         /* Blue cone is 3 */
+	glPushName(3);
+	glutSolidCone(0.1, 4.0, 10,10);
+	glPopName();
+	glPopMatrix();
 	
 }

@@ -44,6 +44,10 @@ public:
 	static GLfloat	lSpeed;
 	static GLfloat	camera[3];
 	static GLfloat	center[3];
+	static GLfloat	globalRoration[3];
+	static bool		trackballMove;
+	static bool		trackingMouse;
+	static bool		redrawContinue;
 };
 
 

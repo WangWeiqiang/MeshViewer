@@ -35,6 +35,10 @@ void RenderObjects(void)
 	glMaterialfv(GL_FRONT, GL_SPECULAR,   earth_mat_specular);
 	glMaterialfv(GL_FRONT, GL_EMISSION,   earth_mat_emission);
 	glMaterialf (GL_FRONT, GL_SHININESS, earth_mat_shininess);
+	if (Environment::trackballMove) 
+	{
+		//glRotatef(angle, axis[0], axis[1], axis[2]);
+	}
 	glutSolidTeapot(0.8);
 	//glPopMatrix(); 
 }
@@ -42,21 +46,23 @@ void RenderObjects(void)
 void display() {
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	gluPerspective(5,1,5,100);
-
-	SetCameraPosition();
-
-	gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
-
 	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	//glTranslatef (0, 0, -20);
+	//gluPerspective(5,1,5,100);
+
+	//SetCameraPosition();
+
+	//gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+
+	glRotatef (Environment::globalRoration[0], 1.0, 0.0, 0.0);
+    glRotatef (Environment::globalRoration[1], 0.0, 1.0, 0.0);
 
 	glPushMatrix ();
-	
 	drawAxes();
 	RenderObjects();
-	
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -82,6 +88,9 @@ void init(void) {
 	glShadeModel(GL_FLAT);
 }
 
+void spanObject(){
+	//if (Environment::redrawContinue) glutPostRedisplay();
+}
 
 int main(int argc, char** argv) {
 
@@ -99,6 +108,7 @@ int main(int argc, char** argv) {
 	init();
 
 	//register functions
+	glutIdleFunc(spanObject);
 	glutDisplayFunc(display);
 	//glutReshapeFunc(reshape);
 	glutKeyboardFunc(KeyboardEvent);
