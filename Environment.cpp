@@ -29,3 +29,7 @@ GLfloat	Environment::rSpeed=0.02f;
 GLfloat	Environment::lSpeed=0.4f;
 GLfloat Environment::camera[3]={0.0f,0.0f,-g_fViewDistance};
 GLfloat Environment::center[3] = {0.0f, 0.0f, 0.0f};
+GLfloat Environment::globalRoration[3]={0.0f,0.0f,0.0f};
+bool	Environment::trackballMove=false;
+bool	Environment::trackingMouse=false;
+bool	Environment::redrawContinue=false;
