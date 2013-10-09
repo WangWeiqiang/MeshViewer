@@ -101,10 +101,27 @@ void stopMotion(int x, int y)
 	}
 }
 
-void KeyboardEvent(unsigned char key, int x, int y)
+void KeyUp(unsigned char key,int x, int y){
+	switch(key){
+	case 32:
+		Environment::keySpaceDown=false;
+		break;
+	case 16:
+		Environment::keyShiftDown=false;
+		break;
+	}
+}
+
+void KeyDown(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 16:
+		Environment::keyShiftDown=true;
+		break;
+	case 32:
+		Environment::keySpaceDown=true;
+		break;
 	case 37:
 		RotateUp();
 		break;
@@ -155,19 +172,31 @@ void MouseMotion(int x, int y)
 		Environment::globalRoration[0]-= ((oldY - y) * 180.0f) / 100.0f;
 		Environment::globalRoration[1]-= ((oldX - x) * 180.0f) / 100.0f;
 		clamp (Environment::globalRoration);
+		
+		
+		if(Environment::keySpaceDown){
+			Environment::g_move[0]-=(float)(oldX - x)/500;
+			Environment::g_move[1]+=(float)(oldY - y)/500;
+		}
+		
+		oldX = x; 
+		oldY = y;
 		glutPostRedisplay();
+		
 	}
 
-	if(Environment::g_bButtonMiddleDown){
-		Environment::g_fViewDistance+=(y-Environment::g_yClick)/25.0f;
+	if(Environment::g_bButtonMiddleDown && Environment::keySpaceDown){
+
+		Environment::g_move[2]-=(float)(oldY - y)/10;
+		oldX = x; 
+		oldY = y;
 		glutPostRedisplay();
 	}
 
 	Environment::g_xClick=x;
 	Environment::g_yClick=y;
-
-	oldX = x; 
-    oldY = y;
+	cout<<Environment::g_move[0]<<"|"<<Environment::g_move[1]<<"|"<<Environment::g_move[2]<<endl;
+	
 	//SetCameraPosition();
 	
 
@@ -192,7 +221,7 @@ void MouseMotion(int x, int y)
 			lastPos[1] = curPos[1];
 			lastPos[2] = curPos[2];
 
-			cout<<angle<<"|"<<axis[0]<<","<<axis[1]<<","<<axis[2]<<endl;
+			
 		}
 	}
 }
@@ -206,6 +235,8 @@ void MouseEvent(int button, int state, int x, int y)
 
 		Environment::g_xClick=x;
 		Environment::g_yClick=y;
+		oldX = x; 
+		oldY = y;
 	}
 	else
 	{
@@ -231,6 +262,7 @@ void MouseEvent(int button, int state, int x, int y)
 		oldX = x;
 		oldY = y;
 	}
+	
 }
 
 void windowResize(int width,int height){
@@ -250,4 +282,3 @@ void windowResize(int width,int height){
 	glLoadIdentity();
 	glutPostRedisplay();
 }
-

@@ -48,6 +48,10 @@ public:
 	static bool		trackballMove;
 	static bool		trackingMouse;
 	static bool		redrawContinue;
+	static bool		keySpaceDown;
+	static bool		keyShiftDown;
+
+	static GLfloat	g_move[3];
 };
 
 

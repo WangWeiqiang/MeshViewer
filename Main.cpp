@@ -50,19 +50,33 @@ void display() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	//glTranslatef (0, 0, -20);
-	//gluPerspective(5,1,5,100);
+	
+	gluPerspective(5,1,5,100);
 
 	//SetCameraPosition();
 
-	//gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
-
-	glRotatef (Environment::globalRoration[0], 1.0, 0.0, 0.0);
-    glRotatef (Environment::globalRoration[1], 0.0, 1.0, 0.0);
-
+	gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+	
 	glPushMatrix ();
-	drawAxes();
-	RenderObjects();
+
+	if(Environment::keySpaceDown){
+		drawAxes();
+		glTranslatef (Environment::g_move[0],Environment::g_move[1],Environment::g_move[2]);
+		RenderObjects();
+	}
+	else
+	{
+		drawAxes();
+		glRotatef (Environment::globalRoration[0], 1.0, 0.0, 0.0);
+	    glRotatef (Environment::globalRoration[1], 0.0, 1.0, 0.0);
+		
+		RenderObjects();
+	}
+	if(Environment::keyShiftDown){
+
+	}
+	
+	
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -97,23 +111,24 @@ int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	//inital window and set it's properties
-	glutCreateWindow("Mesh Viewer - DMT Assignment");
 	glutInitWindowSize(Environment::windowWidth, Environment::windowHeight);
 	HDC hdc = GetDC (NULL);
 	int width = GetDeviceCaps (hdc, HORZRES);
 	int height = GetDeviceCaps (hdc, VERTRES);
 	ReleaseDC (NULL, hdc);
 	glutInitWindowPosition((width-Environment::windowWidth)/2, (height-Environment::windowWidth)/2); //make the window align to center of screen
-
+	glutCreateWindow("Mesh Viewer - DMT Assignment");
 	init();
 
 	//register functions
 	glutIdleFunc(spanObject);
 	glutDisplayFunc(display);
 	//glutReshapeFunc(reshape);
-	glutKeyboardFunc(KeyboardEvent);
+	glutKeyboardFunc(KeyDown);
+	glutKeyboardUpFunc(KeyUp);
 	glutMouseFunc(MouseEvent);
 	glutMotionFunc(MouseMotion);
+	
 	//glutIdleFunc(AnimateScene);
 	glutReshapeFunc(windowResize);
 	

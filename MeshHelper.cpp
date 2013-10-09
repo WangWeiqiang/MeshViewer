@@ -19,13 +19,13 @@ void drawAxes(void){
 	glPushMatrix();
 	/* No name for grey sphere */
 	glColor3f(0.3,0.3,0.3);
-	glutSolidSphere(0.2, 10, 10);
+	glutSolidSphere(0.1, 10, 10);
 	glPushMatrix();
 	
 	glPushName(1);            /* Red cone is 1 */
 	glColor3f(1,0,0);
 	glRotatef(90,0,1,0);
-	glutSolidCone(0.1, 4.0,10,10);
+	glutSolidCone(0.05, 4.0,10,10);
 	glPopName();
 	glPopMatrix();
 	glPushMatrix ();
@@ -33,13 +33,13 @@ void drawAxes(void){
 	glPushName(2);            /* Green cone is 2 */
 	glColor3f(0,1,0);
 	glRotatef(-90,1,0,0);
-	glutSolidCone(0.1, 4.0, 10, 10);
+	glutSolidCone(0.05, 4.0, 10, 10);
 	glPopName();
 	glPopMatrix();
 	
 	glColor3f(0,0,1);         /* Blue cone is 3 */
 	glPushName(3);
-	glutSolidCone(0.1, 4.0, 10,10);
+	glutSolidCone(0.05, 4.0, 10,10);
 	glPopName();
 	glPopMatrix();
 	

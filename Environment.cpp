@@ -33,3 +33,6 @@ GLfloat Environment::globalRoration[3]={0.0f,0.0f,0.0f};
 bool	Environment::trackballMove=false;
 bool	Environment::trackingMouse=false;
 bool	Environment::redrawContinue=false;
+bool	Environment::keySpaceDown=false;
+bool	Environment::keyShiftDown=false;
+GLfloat	Environment::g_move[3]={0.0f,0.0f,0.0f};
