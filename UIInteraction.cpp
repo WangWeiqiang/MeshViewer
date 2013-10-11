@@ -6,9 +6,21 @@ float lastPos[3] = {0.0, 0.0, 0.0};
 float angle = 0.0, axis[3], trans[3];
 int curx, cury;
 int startX, startY;
-int oldX = -13;
-int oldY = -13;
+int oldX= -13;
+int oldY= -13;
 
+void toggleSubWindowSize(int windowid){
+	if(Environment::fullSubWindowID==windowid){
+
+	}
+	else
+	{
+		glutSetWindow(Environment::fullSubWindowID);
+		glutPositionWindow(0,0);
+		glutReshapeWindow(700,700);
+		Environment::fullSubWindowID=windowid;
+	}
+}
 void trackball_ptov(int x, int y, int width, int height, float v[3]){
 	float d, a;
 	/* project x,y onto a hemisphere centered 
@@ -23,55 +35,55 @@ void trackball_ptov(int x, int y, int width, int height, float v[3]){
 
 void SetCameraPosition(){
 	
-	if(Environment::g_yRotate>2*Environment::PI)
-		Environment::g_yRotate=-2*Environment::PI;
-	if(Environment::g_yRotate<-2*Environment::PI)
-		Environment::g_yRotate=0.01;
+	if(Environment::yRotate>2*Environment::PI)
+		Environment::yRotate=-2*Environment::PI;
+	if(Environment::yRotate<-2*Environment::PI)
+		Environment::yRotate=0.01;
 	
-	if(Environment::g_xRotate>2*Environment::PI)
-		Environment::g_xRotate=0.01;
-	if(Environment::g_xRotate<0)
-		Environment::g_xRotate=2*Environment::PI;
+	if(Environment::xRotate>2*Environment::PI)
+		Environment::xRotate=0.01;
+	if(Environment::xRotate<0)
+		Environment::xRotate=2*Environment::PI;
 	
-	if(Environment::g_fViewDistance>50)
-		Environment::g_fViewDistance=50;
-	if(Environment::g_fViewDistance<5)
-		Environment::g_fViewDistance=5;
+	if(Environment::viewDistance>50)
+		Environment::viewDistance=50;
+	if(Environment::viewDistance<5)
+		Environment::viewDistance=5;
 
-	Environment::camera[0]=Environment::center[0]+Environment::g_fViewDistance*sin(Environment::g_yRotate)*cos(Environment::g_xRotate);
-	Environment::camera[2]=Environment::center[1]+Environment::g_fViewDistance*sin(Environment::g_yRotate)*sin(Environment::g_xRotate);
-	Environment::camera[1]=Environment::center[2]+Environment::g_fViewDistance*cos(Environment::g_yRotate);
+	Environment::camera[0]=Environment::center[0]+Environment::viewDistance*sin(Environment::yRotate)*cos(Environment::xRotate);
+	Environment::camera[2]=Environment::center[1]+Environment::viewDistance*sin(Environment::yRotate)*sin(Environment::xRotate);
+	Environment::camera[1]=Environment::center[2]+Environment::viewDistance*cos(Environment::yRotate);
 }
 
 void RotateUp(){
-	Environment::g_yRotate-=Environment::rSpeed;
+	Environment::yRotate-=Environment::rSpeed;
 	SetCameraPosition();
 }
 
 void RotateDown(){
-	Environment::g_yRotate+=Environment::rSpeed;
+	Environment::yRotate+=Environment::rSpeed;
 	SetCameraPosition();
 }
 
 void RotateRight(){
-	Environment::g_xRotate+=Environment::rSpeed;
+	Environment::xRotate+=Environment::rSpeed;
 	SetCameraPosition();
 }
 
 void RotateLeft(){
-	Environment::g_xRotate-=Environment::rSpeed;
+	Environment::xRotate-=Environment::rSpeed;
 	SetCameraPosition();
 }
 
 void ZoomIn(){
-	Environment::center[0]+=Environment::mSpeed*cos(Environment::g_xRotate);
-	Environment::center[2]+=Environment::mSpeed*sin(Environment::g_xRotate);
+	Environment::center[0]+=Environment::mSpeed*cos(Environment::xRotate);
+	Environment::center[2]+=Environment::mSpeed*sin(Environment::xRotate);
 	SetCameraPosition();
 }
 
 void ZoomOut(){
-	Environment::center[0]==Environment::mSpeed*cos(Environment::g_xRotate);
-	Environment::center[2]-=Environment::mSpeed*sin(Environment::g_xRotate);
+	Environment::center[0]==Environment::mSpeed*cos(Environment::xRotate);
+	Environment::center[2]-=Environment::mSpeed*sin(Environment::xRotate);
 	SetCameraPosition();
 }
 
@@ -165,18 +177,19 @@ void clamp (GLfloat *v)
 
 void MouseMotion(int x, int y)
 {
-	if(Environment::g_bButtonLeftDown){
-		Environment::g_xRotate-=(x-Environment::g_xClick)/80.0f;
-		Environment::g_yRotate-=(y-Environment::g_yClick)/80.0f;
-		
-		Environment::globalRoration[0]-= ((oldY - y) * 180.0f) / 100.0f;
-		Environment::globalRoration[1]-= ((oldX - x) * 180.0f) / 100.0f;
-		clamp (Environment::globalRoration);
-		
-		
+	if(Environment::buttonLeftDown){
+		Environment::xRotate-=(x-Environment::xClick)/80.0f;
+		Environment::yRotate-=(y-Environment::yClick)/80.0f;
+
 		if(Environment::keySpaceDown){
-			Environment::g_move[0]-=(float)(oldX - x)/500;
-			Environment::g_move[1]+=(float)(oldY - y)/500;
+			Environment::move[0]-=(float)(oldX - x)/500;
+			Environment::move[1]+=(float)(oldY - y)/500;
+		}
+		else
+		{
+			Environment::globalRoration[0]-= ((oldY - y) * 180.0f) / 100.0f;
+			Environment::globalRoration[1]-= ((oldX - x) * 180.0f) / 100.0f;
+			clamp (Environment::globalRoration);
 		}
 		
 		oldX = x; 
@@ -185,17 +198,16 @@ void MouseMotion(int x, int y)
 		
 	}
 
-	if(Environment::g_bButtonMiddleDown && Environment::keySpaceDown){
+	if(Environment::buttonMiddleDown && Environment::keySpaceDown){
 
-		Environment::g_move[2]-=(float)(oldY - y)/10;
+		Environment::move[2]-=(float)(oldY - y)/10;
 		oldX = x; 
 		oldY = y;
 		glutPostRedisplay();
 	}
 
-	Environment::g_xClick=x;
-	Environment::g_yClick=y;
-	cout<<Environment::g_move[0]<<"|"<<Environment::g_move[1]<<"|"<<Environment::g_move[2]<<endl;
+	Environment::xClick=x;
+	Environment::yClick=y;
 	
 	//SetCameraPosition();
 	
@@ -229,23 +241,23 @@ void MouseMotion(int x, int y)
 void MouseEvent(int button, int state, int x, int y)
 {
 	if(state==GLUT_DOWN){
-		Environment::g_bButtonLeftDown=button==GLUT_LEFT_BUTTON;
-		Environment::g_bButtonRightDown=button==GLUT_RIGHT_BUTTON;
-		Environment::g_bButtonMiddleDown=button==GLUT_MIDDLE_BUTTON;
+		Environment::buttonLeftDown=button==GLUT_LEFT_BUTTON;
+		Environment::buttonRightDown=button==GLUT_RIGHT_BUTTON;
+		Environment::buttonMiddleDown=button==GLUT_MIDDLE_BUTTON;
 
-		Environment::g_xClick=x;
-		Environment::g_yClick=y;
+		Environment::xClick=x;
+		Environment::yClick=y;
 		oldX = x; 
 		oldY = y;
 	}
 	else
 	{
-		Environment::g_bButtonLeftDown=false;
-		Environment::g_bButtonRightDown=false;
-		Environment::g_bButtonMiddleDown=false;
+		Environment::buttonLeftDown=false;
+		Environment::buttonRightDown=false;
+		Environment::buttonMiddleDown=false;
 	}
 
-	if(Environment::g_bButtonLeftDown){
+	if(Environment::buttonLeftDown){
 		switch (state)
 		{
 		case GLUT_DOWN:
@@ -262,23 +274,32 @@ void MouseEvent(int button, int state, int x, int y)
 		oldX = x;
 		oldY = y;
 	}
+	if(Environment::buttonLeftDown){
+		double duration; 
+		clock_t now=clock();
+		if((double)(now-Environment::doubleClickFirst)<Environment::doubleClickPeriod){
+			cout<<"Double Clicked"<<endl;
+			Environment::fullSubWindowID=Environment::cameraView;
+			toggleSubWindowSize();
+		}
+		Environment::doubleClickFirst=now;
+	}
 	
 }
 
 void windowResize(int width,int height){
-	int viewPort=0;
-	int viewPortX=0,viewPortY=0;
-	if(width>height){
-		viewPort=height;
-		viewPortX=(width-height)/2;
+	double asratio;
+	if(width<Environment::windowWidth || height<Environment::windowHeight){
+		width=Environment::windowWidth;
+		height=Environment::windowHeight;
+		glutReshapeWindow(width,height);
 	}
-	else
-	{
-		viewPort=width;
-		viewPortY=(height-width)/2;
-	}
-	glViewport(viewPortX,viewPortY,viewPort,viewPort);
-	
-	glLoadIdentity();
-	glutPostRedisplay();
+    if (height == 0) height = 1;
+    asratio = width / (double) height;
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(5, asratio, 1, 1000); //adjust perspective
+	gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+    glMatrixMode(GL_MODELVIEW);
 }

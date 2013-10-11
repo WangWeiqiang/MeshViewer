@@ -3,9 +3,11 @@
 
 enum {
   MENU_LIGHTING = 1,
-  MENU_POLYMODE=2,
-  MENU_TEXTURING=3,
-  MENU_EXIT=4
+  MENU_FILL=2,
+  MENU_WIREFRAME=3,
+  MENU_FLAT=4,
+  MENU_SMOOTH=5,
+  MENU_EXIT=6
 };
 
 
@@ -14,13 +16,13 @@ void MenuEvent(int idCommand)
 	switch (idCommand)
 	{
 		case MENU_LIGHTING:
-			Environment::g_bLightingEnabled = !Environment::g_bLightingEnabled;
-			if (Environment::g_bLightingEnabled)
+			Environment::lightingEnabled = !Environment::lightingEnabled;
+			if (Environment::lightingEnabled)
 			{
-				glLightfv(GL_LIGHT0, GL_POSITION,Environment::g_lightPos);
-				glLightfv(GL_LIGHT0, GL_AMBIENT,Environment::g_lightAmbient);
-				glLightfv(GL_LIGHT0, GL_DIFFUSE,Environment::g_lightDiffuse);
-				glLightfv(GL_LIGHT0, GL_SPECULAR,Environment::g_lightSpecular);
+				glLightfv(GL_LIGHT0, GL_POSITION,Environment::lightPos);
+				glLightfv(GL_LIGHT0, GL_AMBIENT,Environment::lightAmbient);
+				glLightfv(GL_LIGHT0, GL_DIFFUSE,Environment::lightDiffuse);
+				glLightfv(GL_LIGHT0, GL_SPECULAR,Environment::lightSpecular);
 				glEnable(GL_LIGHT0);
 				glEnable(GL_DEPTH_TEST);
 				glEnable(GL_LIGHTING);
@@ -28,9 +30,17 @@ void MenuEvent(int idCommand)
 			else
 				glDisable(GL_LIGHTING);
 			break;
-		case MENU_POLYMODE:
-			Environment::g_bFillPolygons = !Environment::g_bFillPolygons;
-			glPolygonMode (GL_FRONT_AND_BACK, Environment::g_bFillPolygons ? GL_FILL : GL_LINE);
+		case MENU_WIREFRAME:
+			glPolygonMode (GL_FRONT_AND_BACK,GL_LINE);
+			break;
+		case MENU_FILL:
+			glPolygonMode (GL_FRONT_AND_BACK,GL_FILL);
+			break;
+		case MENU_FLAT:
+			glShadeModel(GL_FLAT);
+			break;
+		case MENU_SMOOTH:
+			glShadeModel(GL_SMOOTH);
 			break;
 		case MENU_EXIT:
 			exit (0);
@@ -41,11 +51,27 @@ void MenuEvent(int idCommand)
 }
 
 int BuildPopupMenu(){
-	int menu=0;
-	menu = glutCreateMenu(MenuEvent);
+	int mainMenu,subMenuModel,subMenuShapeMode;
+
+	
+	
+	subMenuModel=glutCreateMenu(MenuEvent);
+	glutAddMenuEntry("Rubbat",0);
+	glutAddMenuEntry("Rubbat1",1);
+	glutAddMenuEntry("Rubbat2",2);
+
+	subMenuShapeMode=glutCreateMenu(MenuEvent);
+	glutAddMenuEntry("Wire frame",MENU_WIREFRAME);
+	glutAddMenuEntry("Fill",MENU_FILL);
+	glutAddMenuEntry("Flat",MENU_FLAT);
+	glutAddMenuEntry("Smooth",MENU_SMOOTH);
+
+	mainMenu = glutCreateMenu(MenuEvent);
+	glutAddSubMenu("Model",subMenuModel);
+	glutAddSubMenu("Shape Mode",subMenuShapeMode);
 	glutAddMenuEntry ("Toggle lighting\tl", MENU_LIGHTING);
-	glutAddMenuEntry ("Toggle polygon fill\tp", MENU_POLYMODE);
-	glutAddMenuEntry ("Toggle texturing\tt", MENU_TEXTURING);
+
+	
 	glutAddMenuEntry ("Exit demo\tEsc", MENU_EXIT);
-	return menu;
+	return mainMenu;
 }

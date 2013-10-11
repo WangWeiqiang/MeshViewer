@@ -4,15 +4,31 @@ static int g_Width = Environment::windowWidth;                          // Initi
 static int g_Height = Environment::windowHeight;                         // Initial window height
 static GLfloat g_nearPlane = 5;
 static GLfloat g_farPlane = 100;
-
-void reshape(GLint width, GLint height)
+GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_10; 
+void setfont(char* name, int size)
 {
-	glViewport(0, 0, (GLsizei) Environment::windowWidth, (GLsizei) Environment::windowHeight);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	//glOrtho(-50.0, 50.0, -50.0, 50.0, -1.0, -1.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	font_style = GLUT_BITMAP_HELVETICA_10;
+	if (strcmp(name, "helvetica") == 0) {
+		if (size == 12)
+			font_style = GLUT_BITMAP_HELVETICA_12;
+		else if (size == 18)
+			font_style = GLUT_BITMAP_HELVETICA_18;
+        } else if (strcmp(name, "times roman") == 0) {
+			font_style = GLUT_BITMAP_TIMES_ROMAN_10;
+			if (size == 24)
+				font_style = GLUT_BITMAP_TIMES_ROMAN_24;
+	} else if (strcmp(name, "8x13") == 0) {
+		font_style = GLUT_BITMAP_8_BY_13;
+		} else if (strcmp(name, "9x15") == 0) {
+			font_style = GLUT_BITMAP_9_BY_15;
+	}
+}
+
+void drawstr(GLuint x, GLuint y, const char* format, int length)
+{
+	glRasterPos2i(x, y);
+	for(int i=0; i<length; ++i)
+		glutBitmapCharacter(font_style, *(format+i) );
 }
 
 void drawAxes(void){
