@@ -16,6 +16,8 @@ GLuint	Environment::topView		=0;
 GLuint	Environment::leftView		=0;
 GLuint	Environment::cameraView		=0;
 int		Environment::fullSubWindowID=0;
+int		Environment::mainWindowWidth=0;
+int		Environment::mainWindowHeight=0;
 int		Environment::subWindowWidth	=256;
 int		Environment::subWindowHeight=256;
 

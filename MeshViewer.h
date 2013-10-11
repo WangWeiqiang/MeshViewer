@@ -25,6 +25,8 @@ public:
 	static GLuint	topView;
 	static GLuint	leftView;
 	static GLuint	cameraView;
+	static int		mainWindowWidth;
+	static int		mainWindowHeight;
 	static int		fullSubWindowID;
 	static int		subWindowWidth;
 	static int		subWindowHeight;

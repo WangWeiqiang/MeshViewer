@@ -79,7 +79,6 @@ void initFreeView(){
     glutSwapBuffers();  
 }
 
-
 void RenderObjects(void)
 {
 	float colorBronzeDiff[4] = { 0.8, 0.6, 0.0, 1.0 };
@@ -146,6 +145,8 @@ void display() {
 
 void main_reshape(int width,  int height) 
 {
+	Environment::mainWindowWidth=width;
+	Environment::mainWindowHeight=height;
         //main view setting
         glViewport(0, 0, width, height);
         glMatrixMode(GL_PROJECTION);
@@ -177,6 +178,10 @@ void main_reshape(int width,  int height)
 		glutSetWindow(Environment::cameraView);
         glutPositionWindow(2*GAP+Environment::subWindowWidth, 2*GAP+Environment::subWindowHeight);
         glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
+
+		if(Environment::fullSubWindowID>0){
+			fullScreenSubWindow(Environment::fullSubWindowID);
+		}
         
 }
 
