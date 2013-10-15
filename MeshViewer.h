@@ -20,11 +20,11 @@ public:
 	static int		windowHeight;
 	static int		windowPosX;
 	static int		windowPosY;
-	static GLuint	parentWidnow;
-	static GLuint	frontView;
-	static GLuint	topView;
-	static GLuint	leftView;
-	static GLuint	cameraView;
+	static int		parentWidnow;
+	static int		frontView;
+	static int		topView;
+	static int		leftView;
+	static int		cameraView;
 	static int		mainWindowWidth;
 	static int		mainWindowHeight;
 	static int		fullSubWindowID;
@@ -44,12 +44,14 @@ public:
 	static bool		buttonMiddleDown;
 	static int		yClick;
 	static int		xClick;
-	static bool		keySpaceDown;
-	static bool		keyShiftDown;
+	static bool		rotateObject;
+	static bool		rotateCordinate;
+	static bool		zoom;
+	static bool		move;
 	static clock_t	doubleClickFirst;
 	static double	doubleClickPeriod;
 	
-
+	static int		viewAngle;
 	static GLfloat	viewDistance;
 	static GLfloat	camera[3];
 	static GLfloat	center[3];
@@ -57,7 +59,7 @@ public:
 	static GLfloat	xRotate;
 	static GLfloat	yRotate;
 	static GLfloat	zRotate;
-	static GLfloat	move[3];
+	static float	scale;
 	
 	static DWORD	last_idle_time;
 	static GLfloat	g_fTeapotAngle;

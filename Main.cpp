@@ -13,6 +13,47 @@ using namespace std;
 #define GAP  25 
 
 void display();
+void RenderObjects();
+MeshModel model;
+void displayView(int windowid){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glViewport(0,0,Environment::subWindowWidth,Environment::subWindowHeight);
+	gluPerspective(Environment::viewAngle,Environment::subWindowWidth/Environment::subWindowHeight,0.1,10000);
+
+	if(windowid==Environment::frontView){
+		gluLookAt(0,0,-Environment::viewDistance,Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+	}
+
+	if(windowid==Environment::topView){
+		gluLookAt(0,-Environment::viewDistance,0,Environment::center[0], Environment::center[1], Environment::center[2],0, 0, 1);
+	}
+
+	if(windowid==Environment::leftView){
+		gluLookAt(-Environment::viewDistance,0,0,Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+	}
+
+	if(windowid==Environment::cameraView){
+		gluLookAt(Environment::viewDistance,Environment::viewDistance,-Environment::viewDistance,Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
+	}
+
+	SetCameraPosition();
+	glPushMatrix ();
+
+	drawAxes(model);
+	//glTranslatef (Environment::move[0],Environment::move[1],Environment::move[2]);
+
+	glRotatef (Environment::xRotate, 0, 1, 0);
+	glRotatef (Environment::yRotate, 1, 0, 0);
+	glScalef(Environment::scale,Environment::scale,Environment::scale);
+
+	rendMesh(model);
+
+	glPopMatrix();
+	glutSwapBuffers();
+}
 
 void ResetViewport()  
 {  
@@ -23,95 +64,45 @@ void ResetViewport()
     glLoadIdentity();  
 }
 
-void initFrontView(){
-	ResetViewport();  
-  
-    glClear(GL_COLOR_BUFFER_BIT);  
-    glColor3f(1.0, 1.0, 1.0);  
-    glPushMatrix();  
-    gluLookAt(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);  
-    display();  
-    glPopMatrix();  
-    glutSwapBuffers(); 
+void displayFrontView(){
+	displayView(Environment::frontView);
+}
+void reshapeFrontView(int width, int height){
+	glViewport(0, 0, width, height);
+	glLoadIdentity();
+	gluPerspective(Environment::viewAngle,width/height,0.1,10000);
+	glutPostRedisplay();
 }
 
-void initPlanView(){
-	ResetViewport();  
-  
-    glClear(GL_COLOR_BUFFER_BIT);  
-    glColor3f(1.0, 1.0, 1.0);  
-    glPushMatrix();  
-    gluLookAt(1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);  
-    display();  
-    glPopMatrix();  
-    glutSwapBuffers(); 
+void displayTopView(){
+	displayView(Environment::topView);
+}
+void reshapeTopView(int width,int height){
+	glViewport(0, 0, width, height);
+	glLoadIdentity();
+	gluPerspective(Environment::viewAngle,width/height,0.1,10000);
+	glutPostRedisplay();
 }
 
-void initSideView(){
-	ResetViewport();  
-  
-    glClear(GL_COLOR_BUFFER_BIT);  
-    glColor3f(1.0, 1.0, 1.0);  
-    glPushMatrix();  
-    gluLookAt(0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);  
-    display();  
-    glPopMatrix();  
-    glutSwapBuffers();  
+void displayLeftView(){
+	displayView(Environment::leftView);
+}
+void reshapeLeftView(int width,int height){
+	glViewport(0, 0, width, height);
+	glLoadIdentity();
+	gluPerspective(Environment::viewAngle,width/height,0.1,10000);
+	glutPostRedisplay();
 }
 
-void initFreeView(){
-	ResetViewport();  
-  
-    glClear(GL_COLOR_BUFFER_BIT);  
-    glColor3f(1.0, 1.0, 1.0);  
-    glMatrixMode(GL_PROJECTION);  
-    glPushMatrix();  
-	glLoadIdentity();  
-    gluPerspective(30, 1.0, 3.0, 50.0);  
-    glMatrixMode(GL_MODELVIEW);  
-    glPushMatrix();  
-    gluLookAt(5.0, 5.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);  
-    display();  
-    glPopMatrix();  
-    glMatrixMode(GL_PROJECTION);  
-    glPopMatrix();  
-    glFlush();  
-    glutSwapBuffers();  
+
+void reshapeCameraView(int width,int height){
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluPerspective(Environment::viewAngle,width/height,0.1,10000);
+	glutPostRedisplay();
 }
 
-void RenderObjects(void)
-{
-	float colorBronzeDiff[4] = { 0.8, 0.6, 0.0, 1.0 };
-	float colorBronzeSpec[4] = { 1.0, 1.0, 0.4, 1.0 };
-	float colorBlue[4]       = { 0.0, 0.2, 1.0, 1.0 };
-	float colorNone[4]       = { 0.0, 0.0, 0.0, 0.0 };
-	
-	// Child object (teapot) ... relative transform, and render
-	//glPushMatrix();
-	//glTranslatef(0, 0, 0);
-	//glRotatef(g_fTeapotAngle2, 1, 1, 0);
-	//glMaterialfv(GL_FRONT, GL_DIFFUSE, colorBronzeDiff);
-	//glMaterialfv(GL_FRONT, GL_SPECULAR, colorBronzeSpec);
-	//glMaterialf(GL_FRONT, GL_SHININESS, 50.0);
-	glColor4fv(colorBronzeDiff);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	GLfloat earth_mat_ambient[]   = {0.1f, 0.1f, 0.1f, 1.0f};
-	GLfloat earth_mat_diffuse[]   = {1.0f, 1.0f, 1.0f, 1.0f};
-	GLfloat earth_mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f}; 
-	GLfloat earth_mat_emission[] = {0.3f, 0.3f, 0.3f, 1.0f};
-	GLfloat earth_mat_shininess   = 100.0f;
-	glMaterialfv(GL_FRONT, GL_AMBIENT,    earth_mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE,    earth_mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR,   earth_mat_specular);
-	glMaterialfv(GL_FRONT, GL_EMISSION,   earth_mat_emission);
-	glMaterialf (GL_FRONT, GL_SHININESS, earth_mat_shininess);
-	if (Environment::trackballMove) 
-	{
-		//glRotatef(angle, axis[0], axis[1], axis[2]);
-	}
-	glutSolidTeapot(0.8);
-	//glPopMatrix(); 
-}
 
 void display() {
 
@@ -147,67 +138,50 @@ void main_reshape(int width,  int height)
 {
 	Environment::mainWindowWidth=width;
 	Environment::mainWindowHeight=height;
-        //main view setting
-        glViewport(0, 0, width, height);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluOrtho2D(0, width, height, 0);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+    if(Environment::fullSubWindowID>0){
+		fullScreenSubWindow(Environment::fullSubWindowID);
+	}
+	else
+	{
+		//main view setting
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluOrtho2D(0, width, height, 0);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
 		Environment::subWindowWidth= (width-GAP*3)/2.0;
 		Environment::subWindowHeight= (height-GAP*3)/2.0;
 
-        //Front View Display
+		display();
+
+		//Front View Display
 		glutSetWindow(Environment::frontView);
-        glutPositionWindow(GAP, GAP);
-        glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
-
-        //Top View Display
+		glutPositionWindow(GAP, GAP);
+		glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
+	
+		//Top View Display
 		glutSetWindow(Environment::topView);
-        glutPositionWindow(GAP+Environment::subWindowWidth+GAP, GAP);
-        glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
-
-        //Left View Display
+		glutPositionWindow(GAP+Environment::subWindowWidth+GAP, GAP);
+		glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
+	
+		//Left View Display
 		glutSetWindow(Environment::leftView);
-        glutPositionWindow(GAP, 2*GAP+Environment::subWindowHeight);
-        glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
+		glutPositionWindow(GAP, 2*GAP+Environment::subWindowHeight);
+		glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
 
-
-        //Camera View Display
+		//Camera View Display
 		glutSetWindow(Environment::cameraView);
-        glutPositionWindow(2*GAP+Environment::subWindowWidth, 2*GAP+Environment::subWindowHeight);
-        glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
+		glutPositionWindow(2*GAP+Environment::subWindowWidth, 2*GAP+Environment::subWindowHeight);
+		glutReshapeWindow(Environment::subWindowWidth, Environment::subWindowHeight);
 
-		if(Environment::fullSubWindowID>0){
-			fullScreenSubWindow(Environment::fullSubWindowID);
-		}
-        
+		glutSetWindow(Environment::parentWidnow);
+		glutPostRedisplay();
+	}
 }
 
-void displayFreeView(){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	
-	gluPerspective(5,1,5,100);
-
-	//SetCameraPosition();
-
-	gluLookAt(Environment::camera[0], Environment::camera[1],-Environment::camera[2],Environment::center[0], Environment::center[1], Environment::center[2],0, 1, 0);
-	
-	glPushMatrix ();
-
-	drawAxes();
-	glTranslatef (Environment::move[0],Environment::move[1],Environment::move[2]);
-	glRotatef (Environment::globalRoration[0], 1.0, 0.0, 0.0);
-	glRotatef (Environment::globalRoration[1], 0.0, 1.0, 0.0);
-	RenderObjects();
-
-	glPopMatrix();
-	glutSwapBuffers();
+void displayCameraView(){
+	displayView(Environment::cameraView);
 }
 
 void AnimateScene(void)
@@ -227,7 +201,37 @@ void AnimateScene(void)
 }
 
 int main(int argc, char** argv) {
+	string filename="";
 
+	if(argc>=2)
+	{
+      for(int i=0;i<argc;i++){
+		  if(strstr(argv[i],".m")!=NULL){
+			  filename=argv[i];
+		  }
+
+	  }
+	}
+
+	cout<<"Loading mesh model ..."<<endl;
+	if(filename==""){
+		filename="F:\hand.m";
+	}
+	if(filename!=""){
+		loadMesh(filename.c_str(),model);
+		computCenterAndSizeOfMesh(model);
+		float modelSize=model.size[0];
+		if(model.size[1]>modelSize)
+			modelSize=model.size[1];
+		if(model.size[2]>modelSize)
+			modelSize=model.size[2];
+		Environment::viewDistance=(modelSize/2)/(tan(Environment::viewAngle/2));
+		Environment::viewDistance+=Environment::viewDistance*0.1;
+
+		cout<<"Center:"<<model.center[0]<<","<<model.center[1]<<","<<model.center[2]<<endl;
+		cout<<"H:"<<model.size[0]<<",W:"<<model.size[1]<<",L:"<<model.size[2];
+	}
+	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	
@@ -237,36 +241,42 @@ int main(int argc, char** argv) {
 	ReleaseDC (NULL, hdc);
 	glutInitWindowPosition((width-Environment::windowWidth)/2, (height-Environment::windowWidth)/2); //make the window align to center of screen
 	glutInitWindowSize(Environment::windowWidth, Environment::windowHeight);
-	Environment::parentWidnow=glutCreateWindow(Environment::windowTitle);
 	
+	Environment::parentWidnow=glutCreateWindow(Environment::windowTitle);
+	glutKeyboardFunc(KeyDown);
+	glutKeyboardUpFunc(KeyUp);
 	glutReshapeFunc(main_reshape);
 	glutDisplayFunc(display);
 
 	
 	Environment::frontView = glutCreateSubWindow(Environment::parentWidnow, GAP, GAP, Environment::subWindowWidth, Environment::subWindowHeight);
-	glutDisplayFunc(initFrontView);
+	BuildPopupMenu();
+	glutAttachMenu (GLUT_RIGHT_BUTTON);
+	glutDisplayFunc(displayFrontView);
+	glutReshapeFunc(reshapeFrontView);
   
     //screen Window and Display  
     Environment::topView = glutCreateSubWindow(Environment::parentWidnow, 2*GAP+Environment::subWindowWidth, GAP, Environment::subWindowWidth, Environment::subWindowHeight);
-	glutDisplayFunc(initPlanView); 
+	BuildPopupMenu();
+	glutAttachMenu (GLUT_RIGHT_BUTTON);
+	glutDisplayFunc(displayTopView); 
+	glutReshapeFunc(reshapeTopView);
   
     //command Window and Display  
     Environment::leftView = glutCreateSubWindow(Environment::parentWidnow, GAP, 2*GAP+Environment::subWindowHeight, Environment::subWindowWidth, Environment::subWindowHeight);  
-	glutDisplayFunc(initSideView);  
-  
-    Environment::cameraView = glutCreateSubWindow(Environment::parentWidnow, 2*GAP+Environment::subWindowWidth, 2*GAP+Environment::subWindowHeight, Environment::subWindowWidth, Environment::subWindowHeight);  
-	//create popupmenu
 	BuildPopupMenu();
 	glutAttachMenu (GLUT_RIGHT_BUTTON);
-	glutDisplayFunc(displayFreeView);  
-	glutKeyboardFunc(KeyDown);
-	glutKeyboardUpFunc(KeyUp);
+	glutDisplayFunc(displayLeftView);
+	glutReshapeFunc(reshapeLeftView);
+  
+    Environment::cameraView = glutCreateSubWindow(Environment::parentWidnow, 2*GAP+Environment::subWindowWidth, 2*GAP+Environment::subWindowHeight, Environment::subWindowWidth, Environment::subWindowHeight);  
+	BuildPopupMenu();
+	glutAttachMenu (GLUT_RIGHT_BUTTON);
+	glutDisplayFunc(displayCameraView); 
+	glutReshapeFunc(reshapeCameraView);
 	glutMouseFunc(MouseEvent);
 	glutMotionFunc(MouseMotion);
-	//glutIdleFunc(AnimateScene);
+
 	glutMainLoop();
 	return 0;
 }
-
-
-

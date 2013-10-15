@@ -6,15 +6,15 @@
 GLfloat	Environment::PI=3.1415926f;
 
 char	*Environment::windowTitle	="Mesh Viewer - DMT Assignment";
-int		Environment::windowWidth	=575;
-int		Environment::windowHeight	=575;
+int		Environment::windowWidth	=1024;
+int		Environment::windowHeight	=800;
 int		Environment::windowPosX		=0;
 int		Environment::windowPosY		=0;
-GLuint	Environment::parentWidnow	=0;
-GLuint	Environment::frontView		=0;
-GLuint	Environment::topView		=0;
-GLuint	Environment::leftView		=0;
-GLuint	Environment::cameraView		=0;
+int		Environment::parentWidnow	=0;
+int		Environment::frontView		=0;
+int		Environment::topView		=0;
+int		Environment::leftView		=0;
+int		Environment::cameraView		=0;
 int		Environment::fullSubWindowID=0;
 int		Environment::mainWindowWidth=0;
 int		Environment::mainWindowHeight=0;
@@ -32,21 +32,24 @@ bool	Environment::shadeModel			=GL_FLAT;
 bool	Environment::buttonLeftDown		=false;
 bool	Environment::buttonRightDown	=false;
 bool	Environment::buttonMiddleDown	=false;
-bool	Environment::keySpaceDown		=false;
-bool	Environment::keyShiftDown		=false;
+bool	Environment::rotateObject		=false;
+bool	Environment::rotateCordinate	=false;
+bool	Environment::move				=false;
+bool	Environment::zoom				=false;
 int		Environment::xClick				=0;
 int		Environment::yClick				=0;
 clock_t	Environment::doubleClickFirst	=clock();
 double	Environment::doubleClickPeriod	=400;
 
+int		Environment::viewAngle			=90;
 GLfloat Environment::viewDistance		=30.0f;
 GLfloat Environment::globalRoration[3]	={0.0f,0.0f,0.0f};
-GLfloat Environment::xRotate			=PI/4;
-GLfloat Environment::yRotate			=PI/4;
-GLfloat Environment::zRotate			=PI/4;
+GLfloat Environment::xRotate			=0.0;
+GLfloat Environment::yRotate			=0.0;
+GLfloat Environment::zRotate			=0.0;
 GLfloat Environment::camera[3]			={15.0f,15.0f,-viewDistance};
 GLfloat Environment::center[3]			={0.0f,0.0f,0.0f};
-GLfloat	Environment::move[3]			={0.0f,0.0f,0.0f};
+float	Environment::scale				=1;
 
 
 DWORD	Environment::last_idle_time=GetTickCount();
