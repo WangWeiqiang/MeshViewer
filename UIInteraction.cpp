@@ -2,37 +2,6 @@
 #include "MeshViewer.h"
 using namespace std;
 
-void main_reshape(int width,int height);
-
-void fullScreenSubWindow(int windowid){
-	
-	for(int i=2;i<6;i++){
-		if(i!=windowid){
-			glutSetWindow(i);
-			glutHideWindow();
-		}
-	}
-	Environment::fullSubWindowID=windowid;
-	glutSetWindow(windowid);
-	glutPositionWindow(0,0);
-	glutReshapeWindow(Environment::mainWindowWidth,Environment::mainWindowHeight);
-	
-}
-void toggleSubWindowSize(int windowid){
-	if(Environment::fullSubWindowID==windowid){
-		Environment::fullSubWindowID=0;
-		for(int i=2;i<6;i++){
-			glutSetWindow(i);
-			glutShowWindow();
-		}
-		main_reshape(Environment::mainWindowWidth,Environment::mainWindowHeight);
-	}
-	else
-	{
-		fullScreenSubWindow(windowid);
-	}
-}
-
 void SetCameraPosition(){
 	
 	if(Environment::viewDistance>1000)
@@ -89,14 +58,6 @@ void KeyDown(unsigned char key, int x, int y)
 	}
 }
 
-void clamp (GLfloat *v)
-{
-    int i;
-    for (i = 0; i < 3; i ++)
-        if (v[i] > 360 || v[i] < -360)
-            v[i] = 0.0f;
-}
-
 void MouseMotion(int x, int y)
 {
 	if(Environment::rotateObject){
@@ -105,10 +66,6 @@ void MouseMotion(int x, int y)
 			Environment::xRotate -= 360; 
 		else if (Environment::xRotate <-180) 
 			Environment::xRotate += 360; 
-
-		cout<<"x-x1 "<< (x - Environment::xClick)/5.0 <<endl;
-		cout<<"rotate "<<Environment::xRotate<<endl;
-
 		Environment::xClick = x; 
 	   
 		Environment::yRotate += (y - Environment::yClick)/5.0; 
@@ -120,20 +77,7 @@ void MouseMotion(int x, int y)
       	
 		Environment::yClick = y; 
 
-
-		
-
-		glutPostRedisplay();
-
-		glutSetWindow(Environment::frontView);
-		glutPostRedisplay();
-
-		glutSetWindow(Environment::topView);
-		glutPostRedisplay();
-
-		glutSetWindow(Environment::leftView);
-		glutPostRedisplay();
-		
+		glutPostRedisplay();		
 	}
 
 	if(Environment::zoom){
@@ -143,16 +87,7 @@ void MouseMotion(int x, int y)
 			Environment::scale = old_size; 
 		Environment::yClick = y; 
 		glutPostRedisplay();
-		
-		glutSetWindow(Environment::frontView);
-		glutPostRedisplay();
-
-		glutSetWindow(Environment::topView);
-		glutPostRedisplay();
-
-		glutSetWindow(Environment::leftView);
-		glutPostRedisplay();
-		
+	
 	}
 
 	if(Environment::move){
@@ -181,12 +116,5 @@ void MouseEvent(int button, int state, int x, int y)
 
 	if(Environment::buttonLeftDown){
 		Environment::rotateObject=true;
-	
-		double duration; 
-		clock_t now=clock();
-		if((double)(now-Environment::doubleClickFirst)<Environment::doubleClickPeriod){
-			toggleSubWindowSize(glutGetWindow());
-		}
-		Environment::doubleClickFirst=now;
 	}
 }

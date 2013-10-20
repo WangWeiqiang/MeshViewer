@@ -17,6 +17,7 @@ struct MeshModel
 	GLfloat center[3];
 	float size[3];
 	float translation[3];
+	GLfloat renderColor[3];
 };
 
 struct he_vertex

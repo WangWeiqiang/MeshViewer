@@ -2,6 +2,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <windows.h>
+#include <cmath>
+#include <tchar.h> 
+#include <stdio.h>
+#include <strsafe.h>
+
 #include "MeshViewer.h"
 #define _CRT_SECURE_NO_DEPRECATE
 #include <stdio.h>
@@ -12,6 +18,8 @@ static GLfloat g_nearPlane = 5;
 static GLfloat g_farPlane = 100;
 GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_10; 
 struct MeshModel;
+
+void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdouble r);
 
 void setfont(char* name, int size)
 {
@@ -39,34 +47,53 @@ void drawstr(GLuint x, GLuint y, const char* format, int length)
 		glutBitmapCharacter(font_style, *(format+i) );
 }
 
-void drawAxes(MeshModel &model){
-	glPushMatrix();
-	/* No name for grey sphere */
-	glColor3f(0.3,0.3,0.3);
-	glutSolidSphere(0.1, 10, 10);
-	glPushMatrix();
-	
-	glPushName(1);            /* Red cone is 1 */
-	glColor3f(1,0,0);
-	glRotatef(90,0,1,0);
-	glutSolidCone(0.05,model.size[0]*2,1000,1000);
-	glPopName();
-	glPopMatrix();
-	glPushMatrix ();
+string getAppFolder(){
+	TCHAR s[CHAR_MAX];
+	DWORD a = GetCurrentDirectory(100, s);
+	string c(&s[0]);
+	string d( c.begin(), c.end() );
+	return d;
+}
 
-	glPushName(2);            /* Green cone is 2 */
-	glColor3f(0,1,0);
-	glRotatef(-90,1,0,0);
-	glutSolidCone(0.05,model.size[1]*2, 1000, 1000);
-	glPopName();
-	glPopMatrix();
-	
-	glColor3f(0,0,1);         /* Blue cone is 3 */
-	glPushName(3);
-	glutSolidCone(0.05, model.size[2]*2, 1000,1000);
-	glPopName();
-	glPopMatrix();
-	
+void getFilesFromDirectory(std::vector<string> &out, const string &directory)
+{
+
+    HANDLE dir;
+    WIN32_FIND_DATA file_data;
+
+    if ((dir = FindFirstFile((directory + "/*").c_str(), &file_data)) == INVALID_HANDLE_VALUE)
+    	return; /* No files found */
+
+    do {
+    	const string file_name = file_data.cFileName;
+    	const string full_file_name = directory + file_name;
+    	const bool is_directory = (file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+    	if (file_name[0] == '.')
+    		continue;
+
+    	out.push_back(full_file_name);
+    } while (FindNextFile(dir, &file_data));
+
+    FindClose(dir);
+} 
+
+float adjust(float f){
+	if(f>1 && f<10)
+		return f/10;
+	if(f>=10 && f<100)
+		return f/100;
+	if(f>=100 && f<1000)
+		return f/1000;
+	if(f<1&& f>=0.1)
+		return f;
+	if(f<0.1&& f>=0.01)
+		return f*10;
+	if(f<0.01&&f>=0.001)
+		return f*100;
+	if(f<0.001&&f>=0.0001)
+		return f*1000;
+		
 }
 
 void loadMesh(const char* filename, MeshModel &model){
@@ -158,26 +185,196 @@ void loadMesh(const char* filename, MeshModel &model){
 
 }
 
+he_vertex computeVector(he_vertex v1,he_vertex v2){
+	he_vertex v;
+	v.p[0]=v2.p[0]-v1.p[0];
+	v.p[1]=v2.p[1]-v1.p[1];
+	v.p[2]=v2.p[2]-v1.p[2];
+	return v;
+}
+he_vertex crossVectors(he_vertex v1,he_vertex v2){
+	he_vertex v;
+	v.p[0]=v1.p[1]*v2.p[2]-v1.p[2]*v2.p[1];
+	v.p[1]=v1.p[2]*v2.p[0]-v1.p[0]*v2.p[2];
+	v.p[2]=v1.p[0]*v2.p[1]-v1.p[1]*v2.p[0];
+	return v;
+}
+
 void rendMesh(MeshModel &model){
-	glBegin(GL_TRIANGLES);
-	for(int i=0;i<model.faces.size();i++){
-		GLfloat p11=model.faces[i]->edge->v_begin->p[0];
-		GLfloat p12=model.faces[i]->edge->v_begin->p[1];
-		GLfloat p13=model.faces[i]->edge->v_begin->p[2];
-		
-		GLfloat p21=model.faces[i]->edge->he_next->v_begin->p[0];
-		GLfloat p22=model.faces[i]->edge->he_next->v_begin->p[1];
-		GLfloat p23=model.faces[i]->edge->he_next->v_begin->p[2];
+	glPushMatrix();
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+	
+	glEnable(GL_NORMALIZE);
 
-		GLfloat p31=model.faces[i]->edge->he_next->he_next->v_begin->p[0];
-		GLfloat p32=model.faces[i]->edge->he_next->he_next->v_begin->p[1];
-		GLfloat p33=model.faces[i]->edge->he_next->he_next->v_begin->p[2];
-
-		glVertex3f(p11,p12,p13);
-		glVertex3f(p21,p22,p23);
-		glVertex3f(p31,p32,p33);
+	if (Environment::showEdge) {
+		glPolygonOffset(1, 1);
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
-	glEnd();
+
+	if(!Environment::showPoint){
+		
+		if(!Environment::modelColorNoise){
+			glColor3fv(Environment::modelRenderColor);
+		}
+		glBegin(GL_TRIANGLES);
+		for(int i=0;i<model.faces.size();i++){
+			
+			const he_edge &myedge=*model.faces[i]->edge;
+			he_vertex &v1=*model.faces[i]->edge->v_begin;
+			he_vertex &v2=*model.faces[i]->edge->he_next->v_begin;
+			he_vertex &v3=*model.faces[i]->edge->he_next->he_next->v_begin;
+			he_vertex &vnormal=crossVectors(computeVector(v1,v2),computeVector(v1,v3));
+			glNormal3fv(vnormal.p);
+
+			if(Environment::modelColorNoise){
+
+				glColor3f(adjust(v1.p[0]),adjust(v1.p[1]),adjust(v1.p[2]));
+				glVertex3fv(v1.p);
+				glColor3f(adjust(v2.p[0]),adjust(v2.p[1]),adjust(v2.p[2]));
+				glVertex3fv(v2.p);
+				glColor3f(adjust(v3.p[0]),adjust(v3.p[1]),adjust(v3.p[2]));
+				glVertex3fv(v3.p);
+
+			}
+			else{
+				glVertex3fv(v1.p);
+				glVertex3fv(v2.p);
+				glVertex3fv(v3.p);
+			}
+		}
+		glEnd();
+	}
+
+
+	if(Environment::showEdge){
+		glDisable(GL_POLYGON_OFFSET_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(1.0);
+
+		for(int i=0;i<model.faces.size();i++){
+			glBegin(GL_TRIANGLES);
+			const he_edge &myedge=*model.faces[i]->edge;
+			he_vertex &v1=*model.faces[i]->edge->v_begin;
+			he_vertex &v2=*model.faces[i]->edge->he_next->v_begin;
+			he_vertex &v3=*model.faces[i]->edge->he_next->he_next->v_begin;
+			he_vertex &vnormal=crossVectors(computeVector(v1,v2),computeVector(v1,v3));
+			glNormal3fv(vnormal.p);
+			glVertex3fv(v1.p);
+			glVertex3fv(v2.p);
+			glVertex3fv(v3.p);
+			glEnd();
+
+			glBegin(GL_LINES);
+			glLineStipple(4, 0xAAAA);
+			glEnable(GL_LINE_STIPPLE);
+			glColor3f(1.0, 1.0, 1.0);
+			glVertex3fv(v1.p);
+			glVertex3fv(v2.p);
+			glEnd();
+		}
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	if(Environment::showPoint){
+		glDisable(GL_LIGHTING);
+		glPointSize(1.0f);
+		for (int i = 0; i <model.vertex.size(); i++)
+		{
+			glBegin(GL_POINTS);
+			glColor3f(1.0, 0.0, 0.0);
+			glVertex3fv(model.vertex[i]->p);
+			glEnd();
+		}
+		
+	}
+
+
+	if(Environment::showModelBox){
+		glColor3d(1.0,0,0);
+		glBegin(GL_LINES);
+		
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+		glVertex3f(model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+		glVertex3f(model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+		glVertex3f(-model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+		
+		glVertex3f(-model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+
+
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+		glVertex3f(model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+		glVertex3f(model.size[0]/2,model.size[1]/2,model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,model.size[1]/2,model.size[2]/2);
+		glVertex3f(-model.size[0]/2,model.size[1]/2,model.size[2]/2);
+		
+		glVertex3f(-model.size[0]/2,model.size[1]/2,model.size[2]/2);
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+
+
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+		glVertex3f(-model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+
+		glVertex3f(-model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+		glVertex3f(-model.size[0]/2,model.size[1]/2,model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,-model.size[1]/2,model.size[2]/2);
+		glVertex3f(model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+
+		glVertex3f(model.size[0]/2,model.size[1]/2,model.size[2]/2);
+		glVertex3f(model.size[0]/2,model.size[1]/2,-model.size[2]/2);
+
+		glEnd();
+	}
+
+	if(Environment::showCoordinateAxises){
+		GLfloat r=model.size[1]/80;
+		GLfloat axislength=r*20;
+
+		glTranslated(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
+		glColor3d(1.0,1.0,0);
+		glutSolidSphere(1.5*r,100,100);
+
+		glTranslated(model.size[0]/2,model.size[1]/2,model.size[2]/2);
+		//x axis
+		glColor3d(1.0,0,0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2+axislength,-model.size[1]/2,-model.size[2]/2,r);
+		glTranslatef(-model.size[0]/2+axislength,-model.size[1]/2,-model.size[2]/2);
+		glRotatef(90,0,1,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+
+		glRotatef(90,0,-1,0);
+		glTranslatef(model.size[0]/2-axislength,model.size[1]/2,model.size[2]/2);
+		
+		//y axis
+		glColor3d(0,1.0,0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2+axislength,-model.size[2]/2,r);
+		glTranslatef(-model.size[0]/2,-model.size[1]/2+axislength,-model.size[2]/2);
+		glRotatef(-90,1,0,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+
+		//z axis
+		glRotatef(-90,-1,0,0);
+		glTranslatef(model.size[0]/2,model.size[1]/2-axislength,model.size[2]/2);
+		glColor3d(0,0,1.0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2,-model.size[2]/2+axislength,r);
+		glTranslatef(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2+axislength);
+		//glRotatef(-90,1,0,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+	}
+
+	glPopMatrix();
+
+	
 }
 
 void computCenterAndSizeOfMesh(MeshModel &model)
@@ -207,6 +404,23 @@ void computCenterAndSizeOfMesh(MeshModel &model)
   model.size[0] = maxTempX-minTempX;
   model.size[1] = maxTempY-minTempY;
   model.size[2] = maxTempZ-minTempZ;
+  float scale=1;
+  float maxSize=model.size[0];
+  if(model.size[1]>maxSize)
+	  maxSize=model.size[1];
+  if(model.size[2]>maxSize)
+	  maxSize=model.size[2];
+
+  if(Environment::scale<1){
+
+	  glScalef(1/Environment::scale,1/Environment::scale,1/Environment::scale);
+
+	  Environment::scale=1/maxSize;
+  }
+  else
+  {
+	Environment::scale=1/maxSize;
+  }
 
   //adjust model center to (0,0,0)
   for(int i=0;i<model.vertex.size();i++){
@@ -214,4 +428,78 @@ void computCenterAndSizeOfMesh(MeshModel &model)
 	  model.vertex[i]->p[1]-=model.center[1];
 	  model.vertex[i]->p[2]-=model.center[2];
   }
+}
+
+void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdouble r)  
+{  
+    GLdouble  dir_x = x1 - x0;  
+    GLdouble  dir_y = y1 - y0;  
+    GLdouble  dir_z = z1 - z0;  
+    GLdouble  bone_length = sqrt( dir_x*dir_x + dir_y*dir_y + dir_z*dir_z );  
+    static GLUquadricObj *  quad_obj = NULL;  
+    if ( quad_obj == NULL )  
+        quad_obj = gluNewQuadric();  
+    gluQuadricDrawStyle( quad_obj, GLU_FILL );  
+    gluQuadricNormals( quad_obj, GLU_SMOOTH );  
+    glPushMatrix();  
+    // 平移到起始点  
+    glTranslated( x0, y0, z0 );  
+    // 计算长度  
+    double  length;  
+    length = sqrt( dir_x*dir_x + dir_y*dir_y + dir_z*dir_z );  
+    if ( length < 0.0001 ) {   
+        dir_x = 0.0; dir_y = 0.0; dir_z = 1.0;  length = 1.0;  
+    }  
+    dir_x /= length;  dir_y /= length;  dir_z /= length;  
+    GLdouble  up_x, up_y, up_z;  
+    up_x = 0.0;  
+    up_y = 1.0;  
+    up_z = 0.0;  
+    double  side_x, side_y, side_z;  
+    side_x = up_y * dir_z - up_z * dir_y;  
+    side_y = up_z * dir_x - up_x * dir_z;  
+    side_z = up_x * dir_y - up_y * dir_x;  
+    length = sqrt( side_x*side_x + side_y*side_y + side_z*side_z );  
+    if ( length < 0.0001 ) {  
+        side_x = 1.0; side_y = 0.0; side_z = 0.0;  length = 1.0;  
+    }  
+    side_x /= length;  side_y /= length;  side_z /= length;  
+    up_x = dir_y * side_z - dir_z * side_y;  
+    up_y = dir_z * side_x - dir_x * side_z;  
+    up_z = dir_x * side_y - dir_y * side_x;  
+    // 计算变换矩阵  
+    GLdouble  m[16] = { side_x, side_y, side_z, 0.0,  
+        up_x,   up_y,   up_z,   0.0,  
+        dir_x,  dir_y,  dir_z,  0.0,  
+        0.0,    0.0,    0.0,    1.0 };  
+    glMultMatrixd( m );  
+    // 圆柱体参数  
+
+    GLdouble slices = 8.0;      //  段数  
+    GLdouble stack = 3.0;       // 递归次数  
+    gluCylinder( quad_obj, r, r, bone_length, slices, stack );   
+    glPopMatrix();  
+}
+
+void setup_lighting()
+{
+	//Add ambient light
+    GLfloat ambientColor[] = {0.5f,0.5f,0.5f, 1.0f};
+    //glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+	
+	GLfloat lightAmbient[] = {0, 0, 0, 1.0};
+	GLfloat lightDiffuse[]   = {0.5, 0.5, 0.5, 1.0};
+	GLfloat lightSpecular[] = {1.0,1.0, 1.0, 1.0};
+	GLfloat lightPos1[] = {-1.0f, -1.0f, 0,1.0};
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos1);
+	
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+}
+
+void close_lighting(){
+	glDisable(GL_LIGHTING);
 }

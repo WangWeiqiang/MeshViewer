@@ -3,33 +3,28 @@
 //Version 0.1	Wang Weiqiang
 #include <GL/glut.h>
 #include <Windows.h>
+#include <string.h>
+#include <stdlib.h>
 #include <time.h>
+#include <vector>
 #ifndef MESHVIEWER_H
 #define MESHVIEWER_H
 
 typedef int BOOL;
 #define TRUE 1
 #define FALSE 0
+using namespace std;
 
 static class Environment{
 public:
 	static GLfloat	PI;
 
+	static vector<string> modelFiles;
 	static char		*windowTitle;
 	static int		windowWidth;
 	static int		windowHeight;
 	static int		windowPosX;
 	static int		windowPosY;
-	static int		parentWidnow;
-	static int		frontView;
-	static int		topView;
-	static int		leftView;
-	static int		cameraView;
-	static int		mainWindowWidth;
-	static int		mainWindowHeight;
-	static int		fullSubWindowID;
-	static int		subWindowWidth;
-	static int		subWindowHeight;
 
 	static bool		lightingEnabled;
 	static float	lightPos[4];
@@ -38,6 +33,8 @@ public:
 	static float	lightSpecular[4];
 	static bool		fillPolygons;
 	static bool		shadeModel;
+	static float	*modelRenderColor;
+	static bool		modelColorNoise;
 
 	static bool		buttonLeftDown;
 	static bool		buttonRightDown;
@@ -48,8 +45,6 @@ public:
 	static bool		rotateCordinate;
 	static bool		zoom;
 	static bool		move;
-	static clock_t	doubleClickFirst;
-	static double	doubleClickPeriod;
 	
 	static int		viewAngle;
 	static GLfloat	viewDistance;
@@ -71,6 +66,11 @@ public:
 	static bool		trackballMove;
 	static bool		trackingMouse;
 	static bool		redrawContinue;
+	
+	static bool		showPoint;
+	static bool		showEdge;
+	static bool		showModelBox;
+	static bool		showCoordinateAxises;
 };
 
 
