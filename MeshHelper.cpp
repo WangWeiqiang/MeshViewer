@@ -4,47 +4,101 @@
 #include <string>
 #include <windows.h>
 #include <cmath>
+#include <list>
 #include <tchar.h> 
 #include <stdio.h>
 #include <strsafe.h>
-
+#include <algorithm>
+#include <functional>
 #include "MeshViewer.h"
 #define _CRT_SECURE_NO_DEPRECATE
-#include <stdio.h>
 #include "MeshModel.cpp"
-static int g_Width = Environment::windowWidth;                          // Initial window width
-static int g_Height = Environment::windowHeight;                         // Initial window height
-static GLfloat g_nearPlane = 5;
-static GLfloat g_farPlane = 100;
-GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_10; 
+
+#define E(u,v)
+
 struct MeshModel;
 
 void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdouble r);
 
-void setfont(char* name, int size)
-{
-	font_style = GLUT_BITMAP_HELVETICA_10;
-	if (strcmp(name, "helvetica") == 0) {
-		if (size == 12)
-			font_style = GLUT_BITMAP_HELVETICA_12;
-		else if (size == 18)
-			font_style = GLUT_BITMAP_HELVETICA_18;
-        } else if (strcmp(name, "times roman") == 0) {
-			font_style = GLUT_BITMAP_TIMES_ROMAN_10;
-			if (size == 24)
-				font_style = GLUT_BITMAP_TIMES_ROMAN_24;
-	} else if (strcmp(name, "8x13") == 0) {
-		font_style = GLUT_BITMAP_8_BY_13;
-		} else if (strcmp(name, "9x15") == 0) {
-			font_style = GLUT_BITMAP_9_BY_15;
-	}
-}
+void drawGroundAndAxis(){
+	glPolygonMode (GL_FRONT_AND_BACK,GL_FILL);
+	glShadeModel(GL_SMOOTH);
+	glColor3d(0.5,0.5,0.5);
+	glBegin(GL_QUADS);
+	glVertex3d(-3,0,-3);
+	glVertex3d(3,0,-3);
+	glVertex3d(3,0,3);
+	glVertex3d(-3,0,3);
+	glEnd();
 
-void drawstr(GLuint x, GLuint y, const char* format, int length)
-{
-	glRasterPos2i(x, y);
-	for(int i=0; i<length; ++i)
-		glutBitmapCharacter(font_style, *(format+i) );
+	glColor3d(0.3,0.3,0.3);
+	
+	glLineWidth(2.0);
+	double i=-3;
+	glBegin(GL_LINES);
+	while(i<=3)
+	{
+		
+		glVertex3d(-3,0,i);
+		glVertex3d(3,0,i);
+		
+		i+=0.2;
+	}
+	glEnd();
+	
+	i=-3;
+	glBegin(GL_LINES);
+	while(i<=3)
+	{
+		
+		glVertex3d(i,0,3);
+		glVertex3d(i,0,-3);
+		
+		i+=0.2;
+	}
+	glEnd();
+
+
+		GLfloat r=0.02;
+		GLfloat axislength=r*20;
+		GLfloat size=0.1;
+		glColor3d(1.0,0,0);
+		RenderBone(-1.0f,0,-2.0f,0,0,-2.0f,r); //x
+		glColor3d(0,1.0,0);
+		RenderBone(-1.0f,0,-2.0f,-1.0f,1.0f,-2.0f,r); //y
+		glColor3d(0,0,1.0);
+		RenderBone(-1.0f,0,-2.0f,-1.0f,0,-1.0f,r); //z
+
+		glTranslated(-1.0f,0,-2.0f);//asix orgianl point
+		glColor3d(1.0,1.0,0);
+		glutSolidSphere(1.5*r,100,100);
+		
+		
+		//x arrow
+		glColor3d(1.0,0,0);
+		glTranslated(1.0f,0,0); //x asix end point
+		glRotatef(90,0,1,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glRotatef(90,0,-1,0);
+		glTranslatef(-1.0f,0,0);//back to asix original point
+		
+		//y arrow
+		glColor3d(0,1.0,0);		
+		glTranslatef(0,1.0f,0); //y asix end point
+		glRotatef(-90,1,0,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glRotatef(-90,-1,0,0);
+		glTranslatef(0,-1.0f,0); //back to asix orignal point;
+
+		//z axis
+		glColor3d(0,0,1.0);
+		glTranslatef(0,0,1.0f);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glTranslatef(0,0,-1.0f); //back to asix orignal point
+		glRotatef(-90,1,0,0);
+		glTranslatef(1.0f,-2.0f,0.5f); //back to world center
+		glRotatef(90,1,0,0);
+		glTranslatef(0,-0.5f,0); //back to world center
 }
 
 string getAppFolder(){
@@ -96,12 +150,37 @@ float adjust(float f){
 		
 }
 
+
+he_vertex computeVector(he_vertex v1,he_vertex v2){
+	he_vertex v;
+	v.p[0]=v2.p[0]-v1.p[0];
+	v.p[1]=v2.p[1]-v1.p[1];
+	v.p[2]=v2.p[2]-v1.p[2];
+	return v;
+}
+
+he_vertex crossVectors(he_vertex v1,he_vertex v2){
+	he_vertex v;
+	v.p[0]=v1.p[1]*v2.p[2]-v1.p[2]*v2.p[1];
+	v.p[1]=v1.p[2]*v2.p[0]-v1.p[0]*v2.p[2];
+	v.p[2]=v1.p[0]*v2.p[1]-v1.p[1]*v2.p[0];
+	return v;
+}
+
+he_vertex normilised(he_vertex v){
+	float L = sqrt(v.p[0]*v.p[0]+v.p[1]*v.p[1]+v.p[2]*v.p[2]);
+	he_vertex vn;
+	vn.p[0]= v.p[0]/L;
+	vn.p[1]= v.p[1]/L;
+	vn.p[2]= v.p[2]/L;
+	return vn;
+}
+
 void loadMesh(const char* filename, MeshModel &model){
 	model.vertex.clear();
 	model.faces.clear();
 	model.h_edges.clear();
 
-	FILE* f = fopen(filename, "r");
 	
 	ifstream myfile(filename);
 	
@@ -131,6 +210,7 @@ void loadMesh(const char* filename, MeshModel &model){
 				face->vertex1=model.vertex[(int)p1-1];
 				face->vertex2=model.vertex[(int)p2-1];
 				face->vertex3=model.vertex[(int)p3-1];
+				face->normal=normilised(crossVectors(computeVector(*face->vertex1,*face->vertex2),computeVector(*face->vertex1,*face->vertex3)));
 				model.faces.push_back(face);
 			}
 		}
@@ -139,25 +219,28 @@ void loadMesh(const char* filename, MeshModel &model){
 	
 	myfile.clear();
 	myfile.close();
-
+	vector<he_edge> tempEdge;
 	int halfedgenum=model.faces.size()+2;
 
 	for(int i=0;i<model.faces.size();i++){		
 		he_edge* edge1=new he_edge;
-		edge1->he_inv=NULL;
+		
 		edge1->he_next=new he_edge;
 		edge1->he_prev=new he_edge;
+		edge1->he_inv=new he_edge;
 		edge1->v_begin=model.faces[i]->vertex1;
 		edge1->f_left=model.faces[i];
 		edge1->he_next->v_begin=model.faces[i]->vertex2;
 		edge1->he_next->f_left=model.faces[i];
 		edge1->he_prev->v_begin=model.faces[i]->vertex3;
 		edge1->he_prev->f_left=model.faces[i];
-		model.h_edges.push_back(edge1);
+
+		
 		model.faces[i]->edge=edge1;
 
+
 		he_edge* edge2=new he_edge;
-		edge2->he_inv=NULL;
+		edge2->he_inv=NULL;		
 		edge2->he_next=new he_edge;
 		edge2->he_prev=new he_edge;
 		edge2->v_begin=model.faces[i]->vertex2;
@@ -166,7 +249,8 @@ void loadMesh(const char* filename, MeshModel &model){
 		edge2->he_next->f_left=model.faces[i];
 		edge2->he_prev=edge1;
 		edge1->he_next=edge2;
-		model.h_edges.push_back(edge2);
+
+		
 		
 		he_edge* edge3=new he_edge;
 		edge3->he_inv=NULL;
@@ -180,31 +264,36 @@ void loadMesh(const char* filename, MeshModel &model){
 		edge3->he_prev=edge2;
 		edge3->he_next=edge1;
 		edge1->he_prev=edge3;
+
+		model.h_edges.push_back(edge1);
+		model.h_edges.push_back(edge2);
 		model.h_edges.push_back(edge3);
+		
 	}
 
+	for(int i=0;i<model.h_edges.size();i++){
+		if(model.h_edges[i]->he_inv==NULL){
+			std::vector<he_edge*>::iterator it = model.h_edges.end();
+			it = std::find_if(model.h_edges.begin(),model.h_edges.end(), edge_finder(model.h_edges[i]));
+			if(it!=model.h_edges.end()){
+				model.h_edges[i]->he_inv=*it;
+				model.h_edges[i]->he_inv->he_inv=model.h_edges[i];
+			
+			}
+			
+		}
+		
+	}
+
+	//calculate vertex normal
+
 }
 
-he_vertex computeVector(he_vertex v1,he_vertex v2){
-	he_vertex v;
-	v.p[0]=v2.p[0]-v1.p[0];
-	v.p[1]=v2.p[1]-v1.p[1];
-	v.p[2]=v2.p[2]-v1.p[2];
-	return v;
-}
-he_vertex crossVectors(he_vertex v1,he_vertex v2){
-	he_vertex v;
-	v.p[0]=v1.p[1]*v2.p[2]-v1.p[2]*v2.p[1];
-	v.p[1]=v1.p[2]*v2.p[0]-v1.p[0]*v2.p[2];
-	v.p[2]=v1.p[0]*v2.p[1]-v1.p[1]*v2.p[0];
-	return v;
-}
 
 void rendMesh(MeshModel &model){
 	glPushMatrix();
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
-	//glDisable(GL_CULL_FACE);
 	
 	glEnable(GL_NORMALIZE);
 
@@ -225,9 +314,10 @@ void rendMesh(MeshModel &model){
 			he_vertex &v1=*model.faces[i]->edge->v_begin;
 			he_vertex &v2=*model.faces[i]->edge->he_next->v_begin;
 			he_vertex &v3=*model.faces[i]->edge->he_next->he_next->v_begin;
-			he_vertex &vnormal=crossVectors(computeVector(v1,v2),computeVector(v1,v3));
-			glNormal3fv(vnormal.p);
-
+		
+			glNormal3fv(model.faces[i]->normal.p);
+			
+			
 			if(Environment::modelColorNoise){
 
 				glColor3f(adjust(v1.p[0]),adjust(v1.p[1]),adjust(v1.p[2]));
@@ -283,7 +373,7 @@ void rendMesh(MeshModel &model){
 		for (int i = 0; i <model.vertex.size(); i++)
 		{
 			glBegin(GL_POINTS);
-			glColor3f(1.0, 0.0, 0.0);
+			glColor3fv(Environment::modelRenderColor);
 			glVertex3fv(model.vertex[i]->p);
 			glEnd();
 		}
@@ -336,41 +426,7 @@ void rendMesh(MeshModel &model){
 		glEnd();
 	}
 
-	if(Environment::showCoordinateAxises){
-		GLfloat r=model.size[1]/80;
-		GLfloat axislength=r*20;
-
-		glTranslated(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);
-		glColor3d(1.0,1.0,0);
-		glutSolidSphere(1.5*r,100,100);
-
-		glTranslated(model.size[0]/2,model.size[1]/2,model.size[2]/2);
-		//x axis
-		glColor3d(1.0,0,0);
-		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2+axislength,-model.size[1]/2,-model.size[2]/2,r);
-		glTranslatef(-model.size[0]/2+axislength,-model.size[1]/2,-model.size[2]/2);
-		glRotatef(90,0,1,0);
-		glutSolidCone(r*1.5, r*3,100,100);
-
-		glRotatef(90,0,-1,0);
-		glTranslatef(model.size[0]/2-axislength,model.size[1]/2,model.size[2]/2);
-		
-		//y axis
-		glColor3d(0,1.0,0);
-		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2+axislength,-model.size[2]/2,r);
-		glTranslatef(-model.size[0]/2,-model.size[1]/2+axislength,-model.size[2]/2);
-		glRotatef(-90,1,0,0);
-		glutSolidCone(r*1.5, r*3,100,100);
-
-		//z axis
-		glRotatef(-90,-1,0,0);
-		glTranslatef(model.size[0]/2,model.size[1]/2-axislength,model.size[2]/2);
-		glColor3d(0,0,1.0);
-		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2,-model.size[2]/2+axislength,r);
-		glTranslatef(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2+axislength);
-		//glRotatef(-90,1,0,0);
-		glutSolidCone(r*1.5, r*3,100,100);
-	}
+	
 
 	glPopMatrix();
 

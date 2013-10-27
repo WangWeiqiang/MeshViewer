@@ -32,9 +32,11 @@ public:
 	static float	lightDiffuse[4];
 	static float	lightSpecular[4];
 	static bool		fillPolygons;
-	static bool		shadeModel;
+	static int		shadeModel;
 	static float	*modelRenderColor;
 	static bool		modelColorNoise;
+	static GLfloat  modelPos[3];
+	static int		PolygonMode;
 
 	static bool		buttonLeftDown;
 	static bool		buttonRightDown;

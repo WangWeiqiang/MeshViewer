@@ -23,9 +23,7 @@ MeshModel model;
 
 void displayView()
 {
-	GLfloat lightposition[] = {0.0, 0.0, 3.0, 0.0 };//光源位置
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightposition);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -40,19 +38,23 @@ void displayView()
 		glDisable(GL_LIGHTING);
 	}
 
-	//SetCameraPosition();
 	glPushMatrix ();
-	gluLookAt(0,0,2,0,0,0,0, 1, 0);
-	//glTranslatef (Environment::move[0],Environment::move[1],Environment::move[2]);
+	gluLookAt(0,1,2,0,0.7,0,0, 1, 0);
+	drawGroundAndAxis();
+
+	glTranslatef (Environment::modelPos[0],Environment::modelPos[1],0);
 
 	glRotatef (Environment::xRotate, 0, 1, 0);
+	
 	glRotatef (Environment::yRotate, 1, 0, 0);
+	
 	glScalef(Environment::scale,Environment::scale,Environment::scale);
 	
-
-	glEnable(GL_COLOR_MATERIAL);
 	
-
+	glEnable(GL_COLOR_MATERIAL);
+	glPolygonMode (GL_FRONT_AND_BACK,Environment::PolygonMode);
+	glEnable(Environment::shadeModel);
+	glShadeModel(Environment::shadeModel);	
 	rendMesh(model);
 	
 	glPopMatrix();
@@ -69,23 +71,27 @@ void reshape(int width,  int height)
 } 
 
 void init(){
-	glClearColor(0.0,0.0,0.0,0.0);
-	glShadeModel(GL_SMOOTH);
+	glClearColor(0.0,0.0,0.0,1.0);
+	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	GLfloat lightambient[] = {0.5,0.5,0.5,1.0};//环境光
-	GLfloat lightdiffuse[] = {1.0,1.0,1.0,1.0};//漫反射
-	GLfloat lightspecular[] = {1.0,1.0,1.0,1.0 };//镜面反射光
+	
+	GLfloat lightambient[] = {0.5,0.5,0.5,1.0};
+	GLfloat lightdiffuse[] = {1.0,1.0,1.0,1.0};
+	GLfloat lightspecular[] = {1.0,1.0,1.0,1.0 };
 	glLightfv(GL_LIGHT0,GL_AMBIENT,lightambient);
 	glLightfv(GL_LIGHT0,GL_DIFFUSE,lightdiffuse);
 	glLightfv(GL_LIGHT0,GL_SPECULAR,lightspecular);
 	glLightModelf(GL_LIGHT_MODEL_AMBIENT, (0.0, 0.0, 0.0));
-	GLfloat emission[] = {0.0, 0.0, 0.0, 1.0};//发射光
-	GLfloat ambient[] ={0.2,0.2,0.2,0.0};//环境光
-	GLfloat diffuse[] ={1.0,0.5,0.5,0.5};//漫反射特性
-	GLfloat specular[] ={0.5,0.5,0.5,0.0 };//镜面反射光色
-	GLfloat shininess[] ={100.0}; //镜面反射的光亮度
+
+	GLfloat emission[] = {0.0, 0.0, 0.0, 1.0};
+	GLfloat ambient[] ={0.2,0.2,0.2,0.0};
+	GLfloat diffuse[] ={1.0,0.5,0.5,0.5};
+	GLfloat specular[] ={0.5,0.5,0.5,0.0 };
+	GLfloat shininess[] ={100.0};
 	glMaterialfv(GL_FRONT,GL_AMBIENT,ambient);
 	glMaterialfv(GL_FRONT,GL_DIFFUSE,diffuse);
 	glMaterialfv(GL_FRONT,GL_SPECULAR,specular);
@@ -113,7 +119,9 @@ int main(int argc, char** argv) {
 
 	cout<<"Loading mesh model ..."<<endl;
 	if(filename==""){
-		filename="F:\hand_copy.m";
+		if(Environment::modelFiles.size()>0){
+			filename=Environment::modelFiles[0];
+		}
 	}
 	if(filename!=""){
 		loadMesh(filename.c_str(),model);

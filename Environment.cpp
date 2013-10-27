@@ -21,9 +21,11 @@ GLfloat	Environment::lightPos[4]		={1.0,1.0,1.0,0.0};
 GLfloat	Environment::lightAmbient[4]	={1.0f,1.0f,1.0f,1.0f};
 GLfloat	Environment::lightDiffuse[4]	={1.0f,1.0f,1.0f,0.5f};
 GLfloat	Environment::lightSpecular[4]	={1.0f,1.0f,1.0f,1.0f};
+int		Environment::shadeModel=GL_SMOOTH;
 float	*Environment::modelRenderColor	=colorGolden;
-
 bool	Environment::modelColorNoise=false;;
+GLfloat Environment::modelPos[3]={0,0.7,0};
+int		Environment::PolygonMode=GL_FILL;
 
 bool	Environment::buttonLeftDown		=false;
 bool	Environment::buttonRightDown	=false;

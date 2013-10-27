@@ -55,22 +55,20 @@ void MenuEvent(int idCommand)
 				Environment::showPoint=false;
 				break;
 			case MENU_WIREFRAME:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				Environment::PolygonMode=GL_LINE;
 				Environment::showPoint=false;
 				break;
 			case MENU_FILL:
-				glPolygonMode (GL_FRONT_AND_BACK,GL_FILL);
+				Environment::PolygonMode=GL_FILL;
 				Environment::showPoint=false;
 				break;
 			case MENU_FLAT:
-				glPolygonMode (GL_FRONT_AND_BACK,GL_FILL);
 				Environment::showPoint=false;
-				glShadeModel(GL_FLAT);
+				Environment::shadeModel=GL_FLAT;
 				break;
 			case MENU_SMOOTH:
-				glPolygonMode (GL_FRONT_AND_BACK,GL_FILL);
+				Environment::shadeModel=GL_SMOOTH;
 				Environment::showPoint=false;
-				glShadeModel(GL_SMOOTH);
 				break;
 			case MENU_AXIS:
 				Environment::showCoordinateAxises=!Environment::showCoordinateAxises;
