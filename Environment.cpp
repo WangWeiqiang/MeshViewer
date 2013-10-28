@@ -37,13 +37,10 @@ bool	Environment::zoom				=false;
 int		Environment::xClick				=0;
 int		Environment::yClick				=0;
 
-int		Environment::viewAngle			=45;
-GLfloat Environment::viewDistance		=2.0f;
 GLfloat Environment::globalRoration[3]	={0.0f,0.0f,0.0f};
 GLfloat Environment::xRotate			=0.0;
 GLfloat Environment::yRotate			=0.0;
 GLfloat Environment::zRotate			=0.0;
-GLfloat Environment::camera[3]			={0,1.0f,viewDistance};
 GLfloat Environment::center[3]			={0.0f,0.0f,0.0f};
 float	Environment::scale				=1;
 

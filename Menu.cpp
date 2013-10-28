@@ -8,8 +8,6 @@ enum {
   MENU_WIREFRAME,
   MENU_FLAT,
   MENU_SMOOTH,
-  MENU_SHOWEDGE,
-  MENU_AXIS,
   MENU_BOX,
 
   MENU_COLOR_GOLDEN,
@@ -29,18 +27,7 @@ extern MeshModel model;
 
 void MenuEvent(int idCommand)
 {
-	if(idCommand>=100){
-		loadMesh(Environment::modelFiles[idCommand/100-1].c_str(),model);
-		computCenterAndSizeOfMesh(model);
-		float modelSize=model.size[0];
-		if(model.size[1]>modelSize)
-			modelSize=model.size[1];
-		if(model.size[2]>modelSize)
-			modelSize=model.size[2];
-		Environment::viewDistance=(modelSize/2)/(tan(Environment::viewAngle/2));
-	}
-	else
-	{
+
 		switch (idCommand)
 		{
 			case MENU_LIGHTING:
@@ -49,10 +36,6 @@ void MenuEvent(int idCommand)
 			case MENU_POINT:
 				Environment::showPoint=true;
 				Environment::showEdge=false;
-				break;
-			case MENU_SHOWEDGE:
-				Environment::showEdge=!Environment::showEdge;
-				Environment::showPoint=false;
 				break;
 			case MENU_WIREFRAME:
 				Environment::PolygonMode=GL_LINE;
@@ -69,9 +52,6 @@ void MenuEvent(int idCommand)
 			case MENU_SMOOTH:
 				Environment::shadeModel=GL_SMOOTH;
 				Environment::showPoint=false;
-				break;
-			case MENU_AXIS:
-				Environment::showCoordinateAxises=!Environment::showCoordinateAxises;
 				break;
 			case MENU_BOX:
 				Environment::showModelBox=!Environment::showModelBox;
@@ -100,13 +80,13 @@ void MenuEvent(int idCommand)
 				exit (0);
 				break;
 		}
-	}
+
 	//Redraw
 	glutPostRedisplay();
 }
 
 int BuildPopupMenu(){
-	int mainMenu,subMenuModelFils,subMenuModelColor,subMenuShapeMode;
+	int mainMenu,subMenuModelFils,subMenuModelColor,subMenuPolygon,subMenuShapeMode;
 
 	if(Environment::modelFiles.size()>0){
 		subMenuModelFils=glutCreateMenu(MenuEvent);
@@ -122,24 +102,25 @@ int BuildPopupMenu(){
 	glutAddMenuEntry("Black",MENU_COLOR_BLACK);
 	glutAddMenuEntry("Random",MENU_COLOR_NOISE);
 
-	subMenuShapeMode=glutCreateMenu(MenuEvent);
+	subMenuPolygon=glutCreateMenu(MenuEvent);
 	glutAddMenuEntry("Point",MENU_POINT);
-	glutAddMenuEntry("Wire frame",MENU_WIREFRAME);
+	glutAddMenuEntry("Line",MENU_WIREFRAME);
 	glutAddMenuEntry("Fill",MENU_FILL);
+
+	subMenuShapeMode=glutCreateMenu(MenuEvent);
 	glutAddMenuEntry("Flat",MENU_FLAT);
 	glutAddMenuEntry("Smooth",MENU_SMOOTH);
-	glutAddMenuEntry("Toggle Edge",MENU_SHOWEDGE);
+
 
 	mainMenu = glutCreateMenu(MenuEvent);
 	if(Environment::modelFiles.size()>0){
-		glutAddSubMenu("Load Model",subMenuModelFils);
+		glutAddSubMenu("Mesh File",subMenuModelFils);
 	}
-	glutAddSubMenu("Model Color",subMenuModelColor);
-	glutAddSubMenu("Shape Mode",subMenuShapeMode);
-
+	glutAddSubMenu("Color",subMenuModelColor);
+	glutAddSubMenu("Ploygon",subMenuPolygon);
+	glutAddSubMenu("Shading",subMenuShapeMode);
 	glutAddMenuEntry ("Toggle lighting", MENU_LIGHTING);
-	glutAddMenuEntry("Toggle Axises",MENU_AXIS);
-	glutAddMenuEntry("Toggle Box",MENU_BOX);
+	glutAddMenuEntry("Toggle Bounding Box",MENU_BOX);
 	glutAddMenuEntry ("Exit", MENU_EXIT);
 	return mainMenu;
 }

@@ -4,18 +4,10 @@
 #include <string>
 #include <windows.h>
 #include <cmath>
-#include <list>
-#include <tchar.h> 
 #include <stdio.h>
-#include <strsafe.h>
-#include <algorithm>
-#include <functional>
 #include "MeshViewer.h"
 #define _CRT_SECURE_NO_DEPRECATE
 #include "MeshModel.cpp"
-
-#define E(u,v)
-
 struct MeshModel;
 
 void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdouble r);
@@ -150,7 +142,6 @@ float adjust(float f){
 		
 }
 
-
 he_vertex computeVector(he_vertex v1,he_vertex v2){
 	he_vertex v;
 	v.p[0]=v2.p[0]-v1.p[0];
@@ -271,7 +262,7 @@ void loadMesh(const char* filename, MeshModel &model){
 		
 	}
 
-	for(int i=0;i<model.h_edges.size();i++){
+	/*for(int i=0;i<model.h_edges.size();i++){
 		if(model.h_edges[i]->he_inv==NULL){
 			std::vector<he_edge*>::iterator it = model.h_edges.end();
 			it = std::find_if(model.h_edges.begin(),model.h_edges.end(), edge_finder(model.h_edges[i]));
@@ -283,24 +274,13 @@ void loadMesh(const char* filename, MeshModel &model){
 			
 		}
 		
-	}
+	}*/
 
 	//calculate vertex normal
 
 }
 
-
 void rendMesh(MeshModel &model){
-	glPushMatrix();
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_DEPTH_TEST);
-	
-	glEnable(GL_NORMALIZE);
-
-	if (Environment::showEdge) {
-		glPolygonOffset(1, 1);
-		glDisable(GL_POLYGON_OFFSET_FILL);
-	}
 
 	if(!Environment::showPoint){
 		
@@ -337,39 +317,9 @@ void rendMesh(MeshModel &model){
 		glEnd();
 	}
 
-
-	if(Environment::showEdge){
-		glDisable(GL_POLYGON_OFFSET_FILL);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glLineWidth(1.0);
-
-		for(int i=0;i<model.faces.size();i++){
-			glBegin(GL_TRIANGLES);
-			const he_edge &myedge=*model.faces[i]->edge;
-			he_vertex &v1=*model.faces[i]->edge->v_begin;
-			he_vertex &v2=*model.faces[i]->edge->he_next->v_begin;
-			he_vertex &v3=*model.faces[i]->edge->he_next->he_next->v_begin;
-			he_vertex &vnormal=crossVectors(computeVector(v1,v2),computeVector(v1,v3));
-			glNormal3fv(vnormal.p);
-			glVertex3fv(v1.p);
-			glVertex3fv(v2.p);
-			glVertex3fv(v3.p);
-			glEnd();
-
-			glBegin(GL_LINES);
-			glLineStipple(4, 0xAAAA);
-			glEnable(GL_LINE_STIPPLE);
-			glColor3f(1.0, 1.0, 1.0);
-			glVertex3fv(v1.p);
-			glVertex3fv(v2.p);
-			glEnd();
-		}
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-
 	if(Environment::showPoint){
 		glDisable(GL_LIGHTING);
-		glPointSize(1.0f);
+		glPointSize(2.0f);
 		for (int i = 0; i <model.vertex.size(); i++)
 		{
 			glBegin(GL_POINTS);
@@ -424,13 +374,47 @@ void rendMesh(MeshModel &model){
 		glVertex3f(model.size[0]/2,model.size[1]/2,-model.size[2]/2);
 
 		glEnd();
+
+		//show axises with bound box
+
+		GLfloat size=model.diagonalLength/5;;
+		GLfloat r=size/20;
+		glColor3d(1.0,0,0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2+size,-model.size[1]/2,-model.size[2]/2,r); //x
+		glColor3d(0,1.0,0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2+size,-model.size[2]/2,r); //y
+		glColor3d(0,0,1.0);
+		RenderBone(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2,-model.size[0]/2,-model.size[1]/2,-model.size[2]/2+size,r); //z
+
+		glTranslated(-model.size[0]/2,-model.size[1]/2,-model.size[2]/2);//asix orgianl point
+		glColor3d(1.0,1.0,0);
+		glutSolidSphere(1.5*r,100,100);
+		
+		
+		//x arrow
+		glColor3d(1.0,0,0);
+		glTranslated(size,0,0); //x asix end point
+		glRotatef(90,0,1,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glRotatef(90,0,-1,0);
+		glTranslatef(-size,0,0);//back to asix original point
+		
+		//y arrow
+		glColor3d(0,1.0,0);		
+		glTranslatef(0,size,0); //y asix end point
+		glRotatef(-90,1,0,0);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glRotatef(-90,-1,0,0);
+		glTranslatef(0,-size,0); //back to asix orignal point;
+
+		//z axis
+		glColor3d(0,0,1.0);
+		glTranslatef(0,0,size);
+		glutSolidCone(r*1.5, r*3,100,100);
+		glTranslatef(0,0,-1.0f); //back to asix orignal point
+		
+
 	}
-
-	
-
-	glPopMatrix();
-
-	
 }
 
 void computCenterAndSizeOfMesh(MeshModel &model)
@@ -466,7 +450,7 @@ void computCenterAndSizeOfMesh(MeshModel &model)
 	  maxSize=model.size[1];
   if(model.size[2]>maxSize)
 	  maxSize=model.size[2];
-
+  model.diagonalLength=maxSize;
   if(Environment::scale<1){
 
 	  glScalef(1/Environment::scale,1/Environment::scale,1/Environment::scale);
@@ -480,9 +464,9 @@ void computCenterAndSizeOfMesh(MeshModel &model)
 
   //adjust model center to (0,0,0)
   for(int i=0;i<model.vertex.size();i++){
-	  model.vertex[i]->p[0]-=model.center[0];
-	  model.vertex[i]->p[1]-=model.center[1];
-	  model.vertex[i]->p[2]-=model.center[2];
+	  model.vertex[i]->p[0]-=(model.center[0]+Environment::center[0]);
+	  model.vertex[i]->p[1]-=(model.center[1]+Environment::center[1]);
+	  model.vertex[i]->p[2]-=(model.center[2]+Environment::center[2]);
   }
 }
 
@@ -498,9 +482,9 @@ void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdou
     gluQuadricDrawStyle( quad_obj, GLU_FILL );  
     gluQuadricNormals( quad_obj, GLU_SMOOTH );  
     glPushMatrix();  
-    // 平移到起始点  
+    // move to the start point
     glTranslated( x0, y0, z0 );  
-    // 计算长度  
+    //get length
     double  length;  
     length = sqrt( dir_x*dir_x + dir_y*dir_y + dir_z*dir_z );  
     if ( length < 0.0001 ) {   
@@ -523,39 +507,16 @@ void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdou
     up_x = dir_y * side_z - dir_z * side_y;  
     up_y = dir_z * side_x - dir_x * side_z;  
     up_z = dir_x * side_y - dir_y * side_x;  
-    // 计算变换矩阵  
+    //transform matrix
     GLdouble  m[16] = { side_x, side_y, side_z, 0.0,  
         up_x,   up_y,   up_z,   0.0,  
         dir_x,  dir_y,  dir_z,  0.0,  
         0.0,    0.0,    0.0,    1.0 };  
     glMultMatrixd( m );  
-    // 圆柱体参数  
+   
 
-    GLdouble slices = 8.0;      //  段数  
-    GLdouble stack = 3.0;       // 递归次数  
+    GLdouble slices = 8.0;
+    GLdouble stack = 3.0;
     gluCylinder( quad_obj, r, r, bone_length, slices, stack );   
     glPopMatrix();  
-}
-
-void setup_lighting()
-{
-	//Add ambient light
-    GLfloat ambientColor[] = {0.5f,0.5f,0.5f, 1.0f};
-    //glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
-	
-	GLfloat lightAmbient[] = {0, 0, 0, 1.0};
-	GLfloat lightDiffuse[]   = {0.5, 0.5, 0.5, 1.0};
-	GLfloat lightSpecular[] = {1.0,1.0, 1.0, 1.0};
-	GLfloat lightPos1[] = {-1.0f, -1.0f, 0,1.0};
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPos1);
-	
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-}
-
-void close_lighting(){
-	glDisable(GL_LIGHTING);
 }

@@ -47,9 +47,7 @@ public:
 	static bool		rotateCordinate;
 	static bool		zoom;
 	static bool		move;
-	
-	static int		viewAngle;
-	static GLfloat	viewDistance;
+
 	static GLfloat	camera[3];
 	static GLfloat	center[3];
 	static GLfloat	globalRoration[3];
@@ -74,6 +72,4 @@ public:
 	static bool		showModelBox;
 	static bool		showCoordinateAxises;
 };
-
-
 #endif

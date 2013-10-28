@@ -54,8 +54,18 @@ void MouseMotion(int x, int y)
 	}
 
 	if(Environment::move){
-		Environment::modelPos[0]+=(x - Environment::xClick)/3000.0;
-		Environment::modelPos[1]-=(y - Environment::yClick)/3000.0;
+		if(x - Environment::xClick>0)
+			Environment::modelPos[0]+=1/100.0;
+		if(x - Environment::xClick<0)
+			Environment::modelPos[0]-=1/100.0;
+
+		if(y - Environment::yClick>0)
+			Environment::modelPos[1]-=1/100.0;
+		if(y - Environment::yClick<0)
+			Environment::modelPos[1]+=1/100.0;
+
+		Environment::yClick=y;
+		Environment::xClick=x;
 		glutPostRedisplay();
 	}
 	

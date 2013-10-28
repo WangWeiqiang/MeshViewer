@@ -25,36 +25,29 @@ void displayView()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glMatrixMode(GL_MODELVIEW);
+
+	gluPerspective(45,Environment::windowWidth/Environment::windowWidth,0.01,10000);
 	glLoadIdentity();
 
-	//gluPerspective(Environment::viewAngle,Environment::windowWidth/Environment::windowWidth,0.01,10000);
-	
-	glEnable(GL_DEPTH_TEST);  
-	if(Environment::lightingEnabled){
-		glEnable(GL_LIGHTING);
-	}
-	else
-	{
-		glDisable(GL_LIGHTING);
-	}
-
 	glPushMatrix ();
+
 	gluLookAt(0,1,2,0,0.7,0,0, 1, 0);
+	glEnable(Environment::shadeModel);
+	glShadeModel(Environment::shadeModel);
+	glEnable(GL_COLOR_MATERIAL);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_NORMALIZE);
+	
+	Environment::lightingEnabled?glEnable(GL_LIGHTING):glDisable(GL_LIGHTING);
+	
 	drawGroundAndAxis();
 
 	glTranslatef (Environment::modelPos[0],Environment::modelPos[1],0);
-
 	glRotatef (Environment::xRotate, 0, 1, 0);
-	
 	glRotatef (Environment::yRotate, 1, 0, 0);
-	
 	glScalef(Environment::scale,Environment::scale,Environment::scale);
-	
-	
-	glEnable(GL_COLOR_MATERIAL);
+
 	glPolygonMode (GL_FRONT_AND_BACK,Environment::PolygonMode);
-	glEnable(Environment::shadeModel);
-	glShadeModel(Environment::shadeModel);	
 	rendMesh(model);
 	
 	glPopMatrix();
@@ -66,7 +59,8 @@ void reshape(int width,  int height)
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(Environment::viewAngle, (GLfloat)width/(GLfloat)height,0.01,10000);
+	gluPerspective(45, (GLfloat)width/(GLfloat)height,0.01,10000);
+
 	glMatrixMode(GL_MODELVIEW);
 } 
 
@@ -131,7 +125,7 @@ int main(int argc, char** argv) {
 			modelSize=model.size[1];
 		if(model.size[2]>modelSize)
 			modelSize=model.size[2];
-		Environment::viewDistance=(modelSize/2)/(tan(Environment::viewAngle/2));
+		
 		cout<<"Center:"<<model.center[0]<<","<<model.center[1]<<","<<model.center[2]<<endl;
 		cout<<"H:"<<model.size[0]<<",W:"<<model.size[1]<<",L:"<<model.size[2];
 	}
