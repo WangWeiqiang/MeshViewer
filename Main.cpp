@@ -37,7 +37,7 @@ void displayView()
 	glEnable(GL_COLOR_MATERIAL);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_NORMALIZE);
-	
+
 	Environment::lightingEnabled?glEnable(GL_LIGHTING):glDisable(GL_LIGHTING);
 	
 	drawGroundAndAxis();

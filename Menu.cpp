@@ -27,7 +27,17 @@ extern MeshModel model;
 
 void MenuEvent(int idCommand)
 {
-
+	if(idCommand>=100){
+		loadMesh(Environment::modelFiles[idCommand/100-1].c_str(),model);
+		computCenterAndSizeOfMesh(model);
+		float modelSize=model.size[0];
+		if(model.size[1]>modelSize)
+			modelSize=model.size[1];
+		if(model.size[2]>modelSize)
+			modelSize=model.size[2];
+	}
+	else
+	{
 		switch (idCommand)
 		{
 			case MENU_LIGHTING:
@@ -35,7 +45,6 @@ void MenuEvent(int idCommand)
 				break;
 			case MENU_POINT:
 				Environment::showPoint=true;
-				Environment::showEdge=false;
 				break;
 			case MENU_WIREFRAME:
 				Environment::PolygonMode=GL_LINE;
@@ -80,7 +89,7 @@ void MenuEvent(int idCommand)
 				exit (0);
 				break;
 		}
-
+	}
 	//Redraw
 	glutPostRedisplay();
 }

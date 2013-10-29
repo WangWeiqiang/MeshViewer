@@ -28,9 +28,7 @@ public:
 
 	static bool		lightingEnabled;
 	static float	lightPos[4];
-	static float	lightAmbient[4];
-	static float	lightDiffuse[4];
-	static float	lightSpecular[4];
+
 	static bool		fillPolygons;
 	static int		shadeModel;
 	static float	*modelRenderColor;
@@ -68,7 +66,6 @@ public:
 	static bool		redrawContinue;
 	
 	static bool		showPoint;
-	static bool		showEdge;
 	static bool		showModelBox;
 	static bool		showCoordinateAxises;
 };

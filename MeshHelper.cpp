@@ -5,6 +5,9 @@
 #include <windows.h>
 #include <cmath>
 #include <stdio.h>
+#include <map>
+
+#include <algorithm> 
 #include "MeshViewer.h"
 #define _CRT_SECURE_NO_DEPRECATE
 #include "MeshModel.cpp"
@@ -218,7 +221,7 @@ void loadMesh(const char* filename, MeshModel &model){
 		
 		edge1->he_next=new he_edge;
 		edge1->he_prev=new he_edge;
-		edge1->he_inv=new he_edge;
+		edge1->he_inv=NULL;
 		edge1->v_begin=model.faces[i]->vertex1;
 		edge1->f_left=model.faces[i];
 		edge1->he_next->v_begin=model.faces[i]->vertex2;
@@ -259,22 +262,47 @@ void loadMesh(const char* filename, MeshModel &model){
 		model.h_edges.push_back(edge1);
 		model.h_edges.push_back(edge2);
 		model.h_edges.push_back(edge3);
+		model.edges[edge1]=edge1;
+		model.edges[edge2]=edge2;
+		model.edges[edge3]=edge3;
 		
 	}
 
-	/*for(int i=0;i<model.h_edges.size();i++){
-		if(model.h_edges[i]->he_inv==NULL){
-			std::vector<he_edge*>::iterator it = model.h_edges.end();
-			it = std::find_if(model.h_edges.begin(),model.h_edges.end(), edge_finder(model.h_edges[i]));
-			if(it!=model.h_edges.end()){
-				model.h_edges[i]->he_inv=*it;
-				model.h_edges[i]->he_inv->he_inv=model.h_edges[i];
-			
-			}
-			
+	/*for(std::map<pair<int, int>, he_edge*>::iterator it = model.h_edges.begin(); it != model.h_edges.end(); ++it){
+		int u, v;
+		u = it->first.first;
+		v = it->first.second;
+		std::map<pair<int, int>, he_edge>::iterator p = model.h_edges.find(std::make_pair(v,u));
+		if( p != e_map.end() ){
+			it->second.pair = & p->second;
 		}
+	}
+
+
+
+	for(std::vector<he_edge*>::iterator iter = model.h_edges.begin(); iter != model.h_edges.end(); iter ++){
+        if((*iter)->he_inv!= NULL) continue;
+		for(std::vector<he_edge*>::iterator iter2 = iter; iter2 != model.h_edges.end(); iter2++){
+			if((*iter2)->he_inv!=NULL) continue;
+			if((*iter)->he_next->v_begin->index == (*iter2)->v_begin->index && 
+				(*iter2)->he_next->v_begin->index == (*iter)->v_begin->index){
+					(*iter)->he_inv = *iter2;
+					(*iter2)->he_inv= *iter;
+                break;
+            }
+        }
+    }*/
+	typedef pair <he_edge, he_edge> Int_Pair;
+	hash_map <he_edge*, he_edge*> :: const_iterator it;
+	for(int i=0;i<model.h_edges.size();i++){
+		if(model.h_edges[i]->he_inv!=NULL) continue;
+		it=model.edges.find(model.h_edges[i]);
 		
-	}*/
+		if(it!=model.edges.end()){
+			model.h_edges[i]->he_inv=it->second;
+			it->second->he_inv=model.h_edges[i];
+		}
+	}
 
 	//calculate vertex normal
 
