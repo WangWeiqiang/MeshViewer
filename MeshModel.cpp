@@ -1,6 +1,6 @@
 #include <GL/glut.h>
 #include <vector>
-
+#include <unordered_map>
 #if __GNUC__>2
 #include <ext/hash_map>
 using __gnu_cxx::hash_map;
@@ -10,19 +10,23 @@ using __gnu_cxx::hash_map;
 
 using namespace std;
 
-
-
+struct coordinate;
 struct he_vertex;
 struct he_face;
 struct he_edge;
 
+struct coordinate
+{
+	GLfloat x;
+	GLfloat y;
+	GLfloat z;
+};
 
 struct he_vertex
 {
-	GLfloat p[3];
 	int index;
-	vector<he_face*> faces;
-	he_vertex *normal;
+	coordinate *P;
+	coordinate *normal;
 };
 
 struct he_face
@@ -32,7 +36,7 @@ struct he_face
 	he_vertex* vertex1;
 	he_vertex* vertex2;
 	he_vertex* vertex3;
-	he_vertex normal;
+	coordinate *normal;
 };
 
 struct he_edge
@@ -44,27 +48,25 @@ struct he_edge
 	he_face* f_left;
 	int index;
 
-	static const size_t bucket_size = 4;    
-	static const size_t min_buckets = 8;
-	size_t operator()(const he_edge& e) const
-	{
-	   return size_t(e.v_begin->index);
-	}
-	bool operator()(const he_edge& p1, const he_edge& p2) const{
-		return p1.v_begin->index == p2.he_next->v_begin->index
-			&& p1.he_next->v_begin->index==p2.v_begin->index;
-	}
 };
 
+class pair_hasher
+{
+public:
+	size_t operator()(const pair<int,int> &p) const
+    {
+		return p.first;
+    }
+};
 
-typedef hash_map<const he_edge*, he_edge, hash<const he_edge>, equal_to< he_edge>> TwinEdge;
+typedef unordered_map <pair<int, int>, he_edge, pair_hasher> pair_edge;
 
 struct MeshModel 
 {
 	vector<he_vertex*> vertex;
 	vector<he_face*> faces;
 	vector<he_edge*> h_edges;
-	hash_map<he_edge*,he_edge*> edges;
+	pair_edge edges;
 	GLfloat center[3];
 	float size[3];
 	float translation[3];

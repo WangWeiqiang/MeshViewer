@@ -3,23 +3,14 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <tchar.h>
-#include <string.h>
-#include "MeshViewer.h"
+
+#include "Environment.h"
 #include "MeshHelper.cpp"
 #include "Menu.cpp"
 #include "UIInteraction.cpp"
 using namespace std;
 
-
-#ifndef UNICODE  
-  typedef std::string String; 
-#else
-  typedef std::wstring String; 
-#endif
-
 MeshModel model;
-
 
 void displayView()
 {
@@ -48,8 +39,9 @@ void displayView()
 	glScalef(Environment::scale,Environment::scale,Environment::scale);
 
 	glPolygonMode (GL_FRONT_AND_BACK,Environment::PolygonMode);
+
 	rendMesh(model);
-	
+
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -111,7 +103,7 @@ int main(int argc, char** argv) {
 	  }
 	}
 
-	cout<<"Loading mesh model ..."<<endl;
+	
 	if(filename==""){
 		if(Environment::modelFiles.size()>0){
 			filename=Environment::modelFiles[0];
@@ -125,9 +117,6 @@ int main(int argc, char** argv) {
 			modelSize=model.size[1];
 		if(model.size[2]>modelSize)
 			modelSize=model.size[2];
-		
-		cout<<"Center:"<<model.center[0]<<","<<model.center[1]<<","<<model.center[2]<<endl;
-		cout<<"H:"<<model.size[0]<<",W:"<<model.size[1]<<",L:"<<model.size[2];
 	}
 	
 	glutInit(&argc, argv);

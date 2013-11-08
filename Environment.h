@@ -3,9 +3,7 @@
 //Version 0.1	Wang Weiqiang
 #include <GL/glut.h>
 #include <Windows.h>
-#include <string.h>
 #include <stdlib.h>
-#include <time.h>
 #include <vector>
 #ifndef MESHVIEWER_H
 #define MESHVIEWER_H
@@ -27,7 +25,6 @@ public:
 	static int		windowPosY;
 
 	static bool		lightingEnabled;
-	static float	lightPos[4];
 
 	static bool		fillPolygons;
 	static int		shadeModel;
@@ -46,24 +43,11 @@ public:
 	static bool		zoom;
 	static bool		move;
 
-	static GLfloat	camera[3];
 	static GLfloat	center[3];
-	static GLfloat	globalRoration[3];
 	static GLfloat	xRotate;
 	static GLfloat	yRotate;
 	static GLfloat	zRotate;
 	static float	scale;
-	
-	static DWORD	last_idle_time;
-	static GLfloat	g_fTeapotAngle;
-	static GLfloat	g_fTeapotAngle2;
-	static GLfloat	mSpeed;
-	static GLfloat	rSpeed;
-	static GLfloat	lSpeed;
-	
-	static bool		trackballMove;
-	static bool		trackingMouse;
-	static bool		redrawContinue;
 	
 	static bool		showPoint;
 	static bool		showModelBox;

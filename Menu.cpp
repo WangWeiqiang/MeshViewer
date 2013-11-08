@@ -1,5 +1,5 @@
 #include <GL/glut.h>
-#include "MeshViewer.h"
+#include "Environment.h"
 
 enum {
   MENU_LIGHTING = 1,
