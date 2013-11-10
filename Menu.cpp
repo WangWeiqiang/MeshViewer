@@ -1,4 +1,4 @@
-#include <GL/glut.h>
+#include <glut.h>
 #include "Environment.h"
 
 enum {
@@ -15,6 +15,10 @@ enum {
   MENU_COLOR_WHITE,
   MENU_COLOR_GYPSUM,
   MENU_COLOR_NOISE,
+
+  MENU_PROJECTION_ORTH,
+  MENU_PROJECTION_PERS,
+
   MENU_EXIT
 };
 float colorBlack[3]={0.1f,0.1f,0.1f};
@@ -24,17 +28,16 @@ float colorPlaster[3]={0.5f,0.5f,0.5f};
 float color[3];
 
 extern MeshModel model;
+extern HANDLE hThread;
+DWORD WINAPI loadData(void* lpParamter);
+extern const char* modelfilename;
 
 void MenuEvent(int idCommand)
 {
 	if(idCommand>=100){
-		loadMesh(Environment::modelFiles[idCommand/100-1].c_str(),model);
-		computCenterAndSizeOfMesh(model);
-		float modelSize=model.size[0];
-		if(model.size[1]>modelSize)
-			modelSize=model.size[1];
-		if(model.size[2]>modelSize)
-			modelSize=model.size[2];
+		modelfilename=Environment::modelFiles[idCommand/100-1].c_str();
+		
+		hThread = CreateThread(NULL, 0, loadData,NULL, 0, NULL);
 	}
 	else
 	{
@@ -85,6 +88,12 @@ void MenuEvent(int idCommand)
 			case MENU_COLOR_NOISE:
 				Environment::modelColorNoise=true;
 				break;
+			case MENU_PROJECTION_ORTH:
+				Environment::projection=2;
+				break;
+			case MENU_PROJECTION_PERS:
+				Environment::projection=1;
+				break;
 			case MENU_EXIT:
 				exit (0);
 				break;
@@ -95,7 +104,8 @@ void MenuEvent(int idCommand)
 }
 
 int BuildPopupMenu(){
-	int mainMenu,subMenuModelFils,subMenuModelColor,subMenuPolygon,subMenuShapeMode;
+	int mainMenu,subMenuModelFils,subMenuModelColor,
+		subMenuPolygon,subMenuShapeMode,subMenuProjection;
 
 	if(Environment::modelFiles.size()>0){
 		subMenuModelFils=glutCreateMenu(MenuEvent);
@@ -120,6 +130,9 @@ int BuildPopupMenu(){
 	glutAddMenuEntry("Flat",MENU_FLAT);
 	glutAddMenuEntry("Smooth",MENU_SMOOTH);
 
+	subMenuProjection=glutCreateMenu(MenuEvent);
+	glutAddMenuEntry("Perspective",MENU_PROJECTION_PERS);
+	glutAddMenuEntry("Orthographic",MENU_PROJECTION_ORTH);
 
 	mainMenu = glutCreateMenu(MenuEvent);
 	if(Environment::modelFiles.size()>0){
@@ -128,8 +141,10 @@ int BuildPopupMenu(){
 	glutAddSubMenu("Color",subMenuModelColor);
 	glutAddSubMenu("Ploygon",subMenuPolygon);
 	glutAddSubMenu("Shading",subMenuShapeMode);
+	glutAddSubMenu("Projection",subMenuProjection);
 	glutAddMenuEntry ("Toggle lighting", MENU_LIGHTING);
 	glutAddMenuEntry("Toggle Bounding Box",MENU_BOX);
+	
 	glutAddMenuEntry ("Exit", MENU_EXIT);
 	return mainMenu;
 }

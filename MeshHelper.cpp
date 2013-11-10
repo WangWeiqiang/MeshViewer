@@ -1,4 +1,5 @@
-#include <GL/glut.h>
+#include <glut.h>
+#include <GL/glaux.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -13,6 +14,10 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #include "MeshModel.cpp"
 struct MeshModel;
+extern HANDLE hThread;
+extern MeshModel model;
+extern const char* modelfilename;
+void computCenterAndSizeOfMesh(MeshModel &model);
 
 void RenderBone(float x0, float y0, float z0, float x1, float y1, float z1,GLdouble r)  
 {  
@@ -113,7 +118,8 @@ void drawGroundAndAxis(){
 		RenderBone(-1.0f,0,-2.0f,-1.0f,1.0f,-2.0f,r); //y
 		glColor3d(0,0,1.0);
 		RenderBone(-1.0f,0,-2.0f,-1.0f,0,-1.0f,r); //z
-
+		
+		glPushMatrix ();
 		glTranslated(-1.0f,0,-2.0f);//asix orgianl point
 		glColor3d(1.0,1.0,0);
 		glutSolidSphere(1.5*r,100,100);
@@ -144,6 +150,7 @@ void drawGroundAndAxis(){
 		glTranslatef(1.0f,-2.0f,0.5f); //back to world center
 		glRotatef(90,1,0,0);
 		glTranslatef(0,-0.5f,0); //back to world center
+		glPopMatrix();
 }
 
 string getAppFolder(){
@@ -240,11 +247,11 @@ coordinate* normilised(coordinate* v){
 }
 
 void loadMesh(const char* filename, MeshModel &model){
+	Environment::showLoading=true;
 	model.vertex.clear();
 	model.faces.clear();
-	model.h_edges.clear();
+	model.edges.clear();
 
-	
 	ifstream myfile(filename);
 	
 	char vertext[7];
@@ -323,24 +330,18 @@ void loadMesh(const char* filename, MeshModel &model){
 					model.edges[e1key].he_inv=&model.edges[e1keypair];
 					model.edges[e1keypair].he_inv=&model.edges[e1key];
 				}
-
-
 				
 				pair<int, int> e2keypair = make_pair<int&, int&>(edge2->he_next->v_begin->index,edge2->v_begin->index);
 				if(model.edges[e2keypair].v_begin){
 					model.edges[e2key].he_inv=&model.edges[e2keypair];
 					model.edges[e2keypair].he_inv=&model.edges[e2key];
 				}
-
-
-									
+					
 				pair<int, int> e3keypair = make_pair<int&, int&>(edge3->he_next->v_begin->index,edge3->v_begin->index);
 				if(model.edges[e3keypair].v_begin){
 					model.edges[e3key].he_inv=&model.edges[e3keypair];
 					model.edges[e3keypair].he_inv=&model.edges[e3key];
-				}
-
-				
+				}				
 				model.faces.push_back(face);
 			}
 		}
@@ -349,11 +350,7 @@ void loadMesh(const char* filename, MeshModel &model){
 	myfile.clear();
 	myfile.close();
 
-	
-
-
 	//calculate vertex normal
-	std::cout<<"Load vertext normal data ..." <<endl;
 	for(hash_map <const std::pair<int,int>, he_edge> :: const_iterator it=model.edges.begin();it!=model.edges.end();it++)
     { 
 		if(it->second.v_begin==NULL || it->second.v_begin->normal!=NULL)
@@ -372,8 +369,7 @@ void loadMesh(const char* filename, MeshModel &model){
 			e=*e.he_next;
 		}
 
-		while(e.v_begin->index!=it->second.v_begin->index){
-
+		while(e.f_left->index!=it->second.f_left->index){
 				f_normals.push_back(*e.f_left->normal);
 				if(e.he_inv!=NULL)
 					e=*e.he_inv;
@@ -388,6 +384,11 @@ void loadMesh(const char* filename, MeshModel &model){
 		coordinate* n=getNormal(f_normals);
 		it->second.v_begin->normal=n;
 	}
+
+	computCenterAndSizeOfMesh(model);
+	model.edges.clear();
+	Environment::showLoading=false;
+	
 }
 
 void rendMesh(MeshModel &model){
@@ -399,15 +400,12 @@ void rendMesh(MeshModel &model){
 		}
 		glBegin(GL_TRIANGLES);
 		for(int i=0;i<model.faces.size();i++){
-			
-			const he_edge &myedge=*model.faces[i]->edge;
-			he_vertex &v1=*model.faces[i]->edge->v_begin;
-			he_vertex &v2=*model.faces[i]->edge->he_next->v_begin;
-			he_vertex &v3=*model.faces[i]->edge->he_next->he_next->v_begin;
-		
-			//glNormal3f(model.faces[i]->normal.p);
-			
-			
+			he_face* f=model.faces[i];
+			const he_edge &myedge=*f->edge;
+			he_vertex &v1=*f->edge->v_begin;
+			he_vertex &v2=*f->edge->he_next->v_begin;
+			he_vertex &v3=*f->edge->he_next->he_next->v_begin;
+
 			if(Environment::modelColorNoise){
 				if(Environment::shadeModel==GL_SMOOTH)
 				{
@@ -423,7 +421,7 @@ void rendMesh(MeshModel &model){
 				}
 				else
 				{
-					glNormal3f(model.faces[i]->normal->x,model.faces[i]->normal->y,model.faces[i]->normal->z);
+					glNormal3f(f->normal->x,model.faces[i]->normal->y,f->normal->z);
 					glColor3f(adjust(v1.P->x),adjust(v1.P->y),adjust(v1.P->z));
 					glVertex3f(v1.P->x,v1.P->y,v1.P->z);
 					glColor3f(adjust(v2.P->x),adjust(v2.P->y),adjust(v2.P->z));
@@ -444,7 +442,7 @@ void rendMesh(MeshModel &model){
 				}
 				else
 				{
-					glNormal3f(model.faces[i]->normal->x,model.faces[i]->normal->y,model.faces[i]->normal->z);
+					glNormal3f(f->normal->x,f->normal->y,f->normal->z);
 					glVertex3f(v1.P->x,v1.P->y,v1.P->z);					
 					glVertex3f(v2.P->x,v2.P->y,v2.P->z);					
 					glVertex3f(v3.P->x,v3.P->y,v3.P->z);
@@ -461,9 +459,10 @@ void rendMesh(MeshModel &model){
 		glBegin(GL_POINTS);
 		
 		for(int i=0;i<model.faces.size();i++){
-			glVertex3f(model.faces[i]->vertex1->P->x,model.faces[i]->vertex1->P->y,model.faces[i]->vertex1->P->z);
-			glVertex3f(model.faces[i]->vertex2->P->x,model.faces[i]->vertex2->P->y,model.faces[i]->vertex2->P->z);
-			glVertex3f(model.faces[i]->vertex3->P->x,model.faces[i]->vertex3->P->y,model.faces[i]->vertex3->P->z);
+			he_face* f=model.faces[i];
+			glVertex3f(f->vertex1->P->x,f->vertex1->P->y,f->vertex1->P->z);
+			glVertex3f(f->vertex2->P->x,f->vertex2->P->y,f->vertex2->P->z);
+			glVertex3f(f->vertex3->P->x,f->vertex3->P->y,f->vertex3->P->z);
 		}
 		
 		glEnd();
@@ -471,6 +470,7 @@ void rendMesh(MeshModel &model){
 
 
 	if(Environment::showModelBox){
+		glPushMatrix();
 		glColor3d(1.0,0,0);
 		glBegin(GL_LINES);
 		
@@ -552,7 +552,7 @@ void rendMesh(MeshModel &model){
 		glutSolidCone(r*1.5, r*3,100,100);
 		glTranslatef(0,0,-1.0f); //back to asix orignal point
 		
-
+		glPopMatrix();
 	}
 }
 
@@ -608,4 +608,47 @@ void computCenterAndSizeOfMesh(MeshModel &model)
 	  model.vertex[i]->P->z-=(model.center[2]+Environment::center[2]);
   }
 }
+
+void showLoading(AUX_RGBImageRec *TextureImage){
+	glEnable(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, TextureImage->sizeX, TextureImage->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, TextureImage->data);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4); 
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(-0.5,0,-0.5);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(0.5,0,-0.5);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(0.5,0.5,-0.5);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-0.5,0.5,-0.5);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+typedef struct modelFile  
+{  
+   const char *filename; 
+}modelfile,*file; 
+
+DWORD WINAPI loadData(void* lpParamter)
+{
+
+	loadMesh(modelfilename,model);
+	CloseHandle(hThread); 
+	return 0;
+}
+
+AUX_RGBImageRec *LoadBMP(char *FileName)  
+{  
+    FILE *File = NULL;  
+    if(!FileName)  
+        return NULL;  
+    File = fopen(FileName,"r");  
+    if (File)  
+    {  
+        fclose(File);  
+        return auxDIBImageLoad(FileName);  
+    }  
+    return NULL;  
+} 
 

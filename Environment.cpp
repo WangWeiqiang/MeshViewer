@@ -1,4 +1,4 @@
-#include <GL\glut.h>
+#include <glut.h>
 #include <vector>
 #include "Environment.h"
 using namespace std;
@@ -7,11 +7,11 @@ float colorGolden[3]={0.7f,0.3f,0.1f};
 
 vector<string> Environment::modelFiles;
 char	*Environment::windowTitle		="Mesh Viewer - DMT Assignment";
-int		Environment::windowWidth		=600;
+int		Environment::windowWidth		=800;
 int		Environment::windowHeight		=600;
 int		Environment::windowPosX			=0;
 int		Environment::windowPosY			=0;
-
+GLint	Environment::projection			=1;
 bool	Environment::fillPolygons		=false;
 bool	Environment::lightingEnabled	=true;
 int		Environment::shadeModel			=GL_SMOOTH;
@@ -19,6 +19,7 @@ float	*Environment::modelRenderColor	=colorGolden;
 bool	Environment::modelColorNoise	=false;;
 GLfloat Environment::modelPos[3]		={0,0.7,0};
 int		Environment::PolygonMode		=GL_FILL;
+bool	Environment::showLoading		=false;
 
 bool	Environment::buttonLeftDown		=false;
 bool	Environment::buttonRightDown	=false;

@@ -1,12 +1,12 @@
 //Copyright reserved by Wang weiqiang 2013
 //GlobalVariable.h
 //Version 0.1	Wang Weiqiang
-#include <GL/glut.h>
-#include <Windows.h>
+#include <windows.h>
+#include <glut.h>
 #include <stdlib.h>
 #include <vector>
-#ifndef MESHVIEWER_H
-#define MESHVIEWER_H
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
 
 typedef int BOOL;
 #define TRUE 1
@@ -25,13 +25,14 @@ public:
 	static int		windowPosY;
 
 	static bool		lightingEnabled;
-
+	static GLint	projection;
 	static bool		fillPolygons;
 	static int		shadeModel;
 	static float	*modelRenderColor;
 	static bool		modelColorNoise;
 	static GLfloat  modelPos[3];
 	static int		PolygonMode;
+	static bool		showLoading;
 
 	static bool		buttonLeftDown;
 	static bool		buttonRightDown;

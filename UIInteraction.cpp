@@ -1,5 +1,4 @@
-#include <iostream>
-#include "MeshViewer.h"
+#include "Environment.h"
 using namespace std;
 
 void KeyUp(unsigned char key,int x, int y){
@@ -40,7 +39,8 @@ void MouseMotion(int x, int y)
       	
 		Environment::yClick = y; 
 
-		glutPostRedisplay();		
+		glutPostRedisplay();
+		return;
 	}
 
 	if(Environment::zoom){
@@ -50,6 +50,7 @@ void MouseMotion(int x, int y)
 			Environment::scale = old_size; 
 		Environment::yClick = y; 
 		glutPostRedisplay();
+		return;
 	
 	}
 
@@ -67,6 +68,7 @@ void MouseMotion(int x, int y)
 		Environment::yClick=y;
 		Environment::xClick=x;
 		glutPostRedisplay();
+		return;
 	}
 	
 }

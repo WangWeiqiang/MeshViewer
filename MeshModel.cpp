@@ -1,4 +1,4 @@
-#include <GL/glut.h>
+#include <glut.h>
 #include <vector>
 #include <unordered_map>
 #if __GNUC__>2
@@ -65,7 +65,6 @@ struct MeshModel
 {
 	vector<he_vertex*> vertex;
 	vector<he_face*> faces;
-	vector<he_edge*> h_edges;
 	pair_edge edges;
 	GLfloat center[3];
 	float size[3];
